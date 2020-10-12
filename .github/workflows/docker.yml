@@ -1,0 +1,22 @@
+name: docker
+on:
+  push:
+    tags:
+      - '*'
+jobs:
+  docker:
+    name: build and push image to docker hub
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code 
+      uses: actions/checkout@v1
+
+    - name: buil and push 
+      uses: docker/build-push-action@v1
+      with:
+        build_args: gitCommit=${{ github.sha }},semVer=${{ github.ref }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_TOKEN }}
+        repository: ${{ env.GITHUB_REPOSITORY }}
+        tag_with_ref: true
+        push: ${{ startsWith(github.ref, 'refs/tags/') }}
