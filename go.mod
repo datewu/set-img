@@ -1,4 +1,4 @@
-module project-abc
+module github.com/datewu/set-img
 
 go 1.15
 
