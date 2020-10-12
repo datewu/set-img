@@ -55,7 +55,7 @@ update:
 custom:
 	@rm -rf go.*
 	@echo ${APP} > .gitignore
-	@echo populated ${APP} > README.md
+	@echo populated ${APP} `date` > README.md
 	@go mod init github.com/datewu/${APP}
 	@go build
 	@make test
