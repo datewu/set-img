@@ -85,13 +85,13 @@ func SetDeployImg(id *ContainerPath) error {
 	}
 	cpy := d.DeepCopy()
 	found := false
-	for _, c := range cpy.Spec.Template.Spec.Containers {
+	for i, c := range cpy.Spec.Template.Spec.Containers {
 		if c.Name == id.CName {
 			err := id.formatImg()
 			if err != nil {
 				return err
 			}
-			c.Image = id.Img
+			cpy.Spec.Template.Spec.Containers[i].Image = id.Img
 			found = true
 			break
 		}
