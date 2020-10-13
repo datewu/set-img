@@ -27,7 +27,7 @@ jobs:
         TOKEN: ${{ secrets.K8_CI_TOKEN }}
         URL: ${{ secrets.K8_CI_URL }}
       run: |
-       curl '"$URL"' \
+       curl \"$URL\"  \
         -X POST \
         -H "Authorization: $TOKEN" \
         --data-binary '{"deploy_name":"set-img","container_name":"img","img":"${{ github.repository }}:${{ github.ref }}"}'
