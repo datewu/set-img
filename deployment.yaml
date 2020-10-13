@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: set-img
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: set-img
+  template:
+    metadata:
+      labels:
+        app: set-img
+    spec:
+      serviceAccountName: set-img
+      containers:
+      - name: img
+        image: datewu/set-img:v0.0.1
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources:
+          limits: 
+            cpu: 50m
+            memory: 60Mi
+        volumeMounts:
+          - name: set-img
+            mountPath: /opt
+            #securityContext:
+            #seLinuxOptions:
+            #level: "s0"
+      volumes:
+        - name: set-img
+          hostPath:
+              path: /media/data/set-img
