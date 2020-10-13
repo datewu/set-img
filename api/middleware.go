@@ -17,12 +17,9 @@ func checkAuth(c *gin.Context) {
 		return
 	}
 	ok, err := auth.Valid(token)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-	if !ok {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "cannot authentication"})
+	if err != nil || !ok {
+		c.AbortWithStatusJSON(http.StatusUnauthorized,
+			gin.H{"token": token, "message": "bad token, cannot authentication"})
 		return
 	}
 	ok, err = author.Can(token)
