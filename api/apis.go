@@ -2,7 +2,9 @@ package api
 
 import (
 	"net/http"
+	"strings"
 
+	"github.com/datewu/set-img/auth"
 	"github.com/datewu/set-img/k8s"
 	"github.com/gin-gonic/gin"
 )
@@ -17,11 +19,31 @@ func getEngine() *gin.Engine {
 
 func setRoutes(api *gin.RouterGroup) {
 	api.GET("/ping", ping)
-	api.GET("/list/:ns", listDemo)
+	api.GET("/token", getToken)
+	private := api.Group("/auth", checkAuth)
+	setPrivateRoutes(private)
 }
 
 func ping(c *gin.Context) {
 	c.String(http.StatusOK, "pong")
+}
+
+func getToken(c *gin.Context) {
+	// TODO needs more security
+	if !strings.HasPrefix(c.Request.Host, "localhost:") {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	token, err := auth.NewToken()
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	c.String(http.StatusOK, token)
+}
+
+func setPrivateRoutes(api *gin.RouterGroup) {
+	api.GET("/list/:ns", listDemo)
 }
 
 func listDemo(c *gin.Context) {
