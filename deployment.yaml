@@ -14,7 +14,10 @@ spec:
     spec:
       serviceAccountName: set-img
       containers:
-      - name: img
+      - env:
+        - name: SOME_ENV
+          value: SOME_VALUE
+        name: img
         image: datewu/set-img:v0.0.1
         ports:
         - containerPort: 8080

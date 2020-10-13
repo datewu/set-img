@@ -3,7 +3,6 @@ package api
 import (
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/datewu/set-img/auth"
 	"github.com/datewu/set-img/author"
@@ -46,9 +45,8 @@ func extractToken(c *gin.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	const bearerPrefix = "Bearer "
-	if !strings.HasPrefix(ah.Authorization, bearerPrefix) {
-		return "", errors.New("not Bearer token")
+	if len(ah.Authorization) == 0 {
+		return "", errors.New("empty token")
 	}
-	return ah.Authorization[len(bearerPrefix):], nil
+	return ah.Authorization, nil
 }
