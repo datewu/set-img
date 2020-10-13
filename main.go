@@ -2,6 +2,7 @@ package main
 
 func main() {
 	parseFlag()
-	go initK8s()
+	panicIfErr(initKey)
+	panicIfErr(initK8s)
 	server()
 }

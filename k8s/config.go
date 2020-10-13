@@ -19,13 +19,14 @@ type Conf struct {
 var classicalClientSet *kubernetes.Clientset
 
 // InitClientSet ...
-func InitClientSet(c *Conf) {
+func InitClientSet(c *Conf) error {
 	restConfig := loadRestConfig(c)
 	cli, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	classicalClientSet = cli
+	return nil
 }
 
 func loadRestConfig(conf *Conf) *rest.Config {

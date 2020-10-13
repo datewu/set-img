@@ -11,8 +11,7 @@ import (
 )
 
 const (
-	digest     = "DIGEST_FOR_SIGN which is irrelevant, :)"
-	priKeyFile = "private_key_for_sign.pem"
+	digest = "DIGEST_FOR_SIGN which is irrelevant, :)"
 )
 
 var (
@@ -20,43 +19,45 @@ var (
 	digstHash  = sha256.Sum256([]byte(digest))
 )
 
-func init() {
-	f, err := os.Open(priKeyFile)
+// InitKeys load/generate the ecdsa private key
+func InitKeys(fn string) error {
+	f, err := os.Open(fn)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			generatePrivateKey()
-			return
+			return generatePrivateKey(fn)
 		}
-		panic(err)
+		return err
 	}
 	f.Close()
-	loadPrivateKey()
+	return loadPrivateKey(fn)
 }
 
-func generatePrivateKey() {
+func generatePrivateKey(fn string) error {
 	pri, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	bs, err := encodePrivateKey(pri)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	err = ioutil.WriteFile(priKeyFile, bs, 0600)
+	err = ioutil.WriteFile(fn, bs, 0600)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	privateKey = pri
+	return nil
 }
 
-func loadPrivateKey() {
-	bs, err := ioutil.ReadFile(priKeyFile)
+func loadPrivateKey(fn string) error {
+	bs, err := ioutil.ReadFile(fn)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	pri, err := decodePrivateKey(bs)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	privateKey = pri
+	return nil
 }

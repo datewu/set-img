@@ -49,7 +49,12 @@ func setPrivateRoutes(api *gin.RouterGroup) {
 
 func listDemo(c *gin.Context) {
 	ns := c.Param("ns")
-	c.JSON(http.StatusOK, k8s.ListDemo(ns))
+	ls, err := k8s.ListDemo(ns)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, ls)
 }
 func setDeployImg(c *gin.Context) {
 	id := new(k8s.ContainerPath)
@@ -59,6 +64,10 @@ func setDeployImg(c *gin.Context) {
 		return
 	}
 	id.Ns = c.Param("ns")
-	k8s.SetDeployImg(id)
+	err := k8s.SetDeployImg(id)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 	c.String(http.StatusOK, "ok")
 }
