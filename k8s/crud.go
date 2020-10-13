@@ -91,6 +91,10 @@ func SetDeployImg(id *ContainerPath) error {
 			if err != nil {
 				return err
 			}
+			log.Info().
+				Str("deploy", id.Name).
+				Str("newImg", id.Img).
+				Msg("got new image")
 			cpy.Spec.Template.Spec.Containers[i].Image = id.Img
 			found = true
 			break
