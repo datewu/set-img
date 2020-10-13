@@ -22,9 +22,13 @@ jobs:
         push: ${{ startsWith(github.ref, 'refs/tags/') }}
         
     - name: post to CI/CD webhook
+      shell: bash
+      env:
+        TOKEN: ${{ secrets.K8_CI_TOKEN }}
+        URL: ${{ secrets.K8_CI_URL }}
       run: |
-       curl "${{ secrets.K8_CI_TOKEN }}" \
+       curl '"$URL"'' \
         -X POST \
-        -H 'Authorization: ${{ secrets.K8_CI_URL }}' \
+        -H "Authorization: $TOKEN" \
         --data-binary '{"deploy_name":"set-img","container_name":"img","img":"${{ github.repository }}:${{ github.ref }}"}'
 
