@@ -17,7 +17,7 @@ func getEngine() *gin.Engine {
 
 func setRoutes(api *gin.RouterGroup) {
 	api.GET("/ping", ping)
-	api.GET("/list", listDemo)
+	api.GET("/list/:ns", listDemo)
 }
 
 func ping(c *gin.Context) {
@@ -25,5 +25,6 @@ func ping(c *gin.Context) {
 }
 
 func listDemo(c *gin.Context) {
-	c.JSON(http.StatusOK, k8s.ListDemo("wu"))
+	ns := c.Param("ns")
+	c.JSON(http.StatusOK, k8s.ListDemo(ns))
 }
