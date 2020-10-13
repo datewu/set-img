@@ -20,7 +20,7 @@ type Conf struct {
 
 // Server ...
 func Server(c *Conf) error {
-	if c.Mode == "prod" {
+	if c.Mode == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	e := getEngine()

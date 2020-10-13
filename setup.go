@@ -16,7 +16,7 @@ func panicIfErr(fn func() error) {
 }
 
 func initKey() error {
-	fn := "rpivate_key_for_sign.pem"
+	fn := "private_key_for_sign.pem"
 	if *modeFlag == "production" {
 		fn = path.Join("/opt", fn)
 	}
