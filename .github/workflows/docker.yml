@@ -23,7 +23,7 @@ jobs:
         
     - name: post to CI/CD webhook
       run: |
-       curl "${{ secrets.K8_CI_TOKEN }}" \
+       curl "https://cicd.deoops.com/api/v1/auth/setdeploy/wu/image" \
         -X POST \
         -H 'Authorization: ${{ secrets.K8_CI_URL }}' \
         --data-binary '{"deploy_name":"set-img","container_name":"img","img":"${{ github.repository }}:${{ github.ref }}"}'
