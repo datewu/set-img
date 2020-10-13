@@ -44,9 +44,21 @@ func getToken(c *gin.Context) {
 
 func setPrivateRoutes(api *gin.RouterGroup) {
 	api.GET("/list/:ns", listDemo)
+	api.POST("/setdeploy/:ns/image", setDeployImg)
 }
 
 func listDemo(c *gin.Context) {
 	ns := c.Param("ns")
 	c.JSON(http.StatusOK, k8s.ListDemo(ns))
+}
+func setDeployImg(c *gin.Context) {
+	id := new(k8s.ContainerPath)
+	if err := c.BindJSON(id); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest,
+			gin.H{"message": "cannot unmarshal/binding post data"})
+		return
+	}
+	id.Ns = c.Param("ns")
+	k8s.SetDeployImg(id)
+	c.String(http.StatusOK, "ok")
 }

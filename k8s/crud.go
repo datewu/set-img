@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 
+	"github.com/rs/zerolog/log"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -48,6 +49,45 @@ func ListDemo(ns string) []*DBio {
 	return res
 }
 
-func updateDeploy() {
+// ContainerPath ...
+type ContainerPath struct {
+	Ns    string
+	Name  string `json:"deploy_name" binding:"required"`
+	CName string `json:"container_name" binding:"required"`
+	Img   string `json:"img" binding:"required"`
+}
 
+// SetDeployImg ...
+func SetDeployImg(id *ContainerPath) {
+	ctx := context.Background()
+	opts := v1.GetOptions{}
+	d, err := classicalClientSet.AppsV1().Deployments(id.Ns).Get(ctx, id.Name, opts)
+	if err != nil {
+		log.Error().Err(err).
+			Str("name", id.Name).
+			Msg("get deploy failed")
+		return
+	}
+	cpy := d.DeepCopy()
+	found := false
+	for _, c := range cpy.Spec.Template.Spec.Containers {
+		if c.Name == id.CName {
+			c.Image = id.Img
+			found = true
+			break
+		}
+	}
+	if !found {
+		log.Error().Err(err).
+			Str("deploy", id.Name).
+			Str("container", id.CName).
+			Msg("canot find container")
+		return
+	}
+	uOpts := v1.UpdateOptions{}
+	_, err = classicalClientSet.AppsV1().Deployments(id.Ns).Update(ctx, cpy, uOpts)
+	if err != nil {
+		log.Error().Err(err).
+			Msg("update deploy failed")
+	}
 }
