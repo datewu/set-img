@@ -28,6 +28,10 @@ func ping(c *gin.Context) {
 	c.String(http.StatusOK, "pong")
 }
 
+func authPing(c *gin.Context) {
+	c.String(http.StatusOK, "yes, you've been authenticated")
+}
+
 func getToken(c *gin.Context) {
 	// TODO needs more security
 	if !strings.HasPrefix(c.Request.Host, "localhost:") {
@@ -43,6 +47,7 @@ func getToken(c *gin.Context) {
 }
 
 func setPrivateRoutes(api *gin.RouterGroup) {
+	api.GET("/ping", authPing)
 	api.GET("/list/:ns", listDemo)
 	api.POST("/setdeploy/:ns/image", setDeployImg)
 }
