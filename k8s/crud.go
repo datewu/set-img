@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog/log"
+	apps_v1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -15,11 +16,39 @@ type DBio struct {
 	Containers []*ConBio `json:"containers"`
 }
 
+func newDBio(d *apps_v1.Deployment) *DBio {
+	bio := &DBio{
+		Name: d.Name,
+	}
+	containes := d.Spec.Template.Spec.Containers
+	cs := make([]*ConBio, len(containes))
+	for i, c := range containes {
+		cs[i] = &ConBio{
+			Name:  c.Name,
+			Image: c.Image,
+			Pull:  string(c.ImagePullPolicy),
+		}
+	}
+	bio.Containers = cs
+	return bio
+}
+
 // ConBio ..
 type ConBio struct {
 	Name  string `json:"name"`
 	Image string `json:"img"`
 	Pull  string `json:"pull"`
+}
+
+// GetDBio by name
+func GetDBio(ns, name string) (*DBio, error) {
+	opts := v1.GetOptions{}
+	ctx := context.Background()
+	d, err := classicalClientSet.AppsV1().Deployments(ns).Get(ctx, name, opts)
+	if err != nil {
+		return nil, err
+	}
+	return newDBio(d), nil
 }
 
 // ListDemo ...
@@ -33,20 +62,7 @@ func ListDemo(ns string) ([]*DBio, error) {
 	its := deploys.Items
 	res := make([]*DBio, len(its))
 	for i, d := range its {
-		de := &DBio{
-			Name: d.Name,
-		}
-		containes := d.Spec.Template.Spec.Containers
-		cs := make([]*ConBio, len(containes))
-		for i, c := range containes {
-			cs[i] = &ConBio{
-				Name:  c.Name,
-				Image: c.Image,
-				Pull:  string(c.ImagePullPolicy),
-			}
-		}
-		de.Containers = cs
-		res[i] = de
+		res[i] = newDBio(&d)
 	}
 	return res, nil
 }

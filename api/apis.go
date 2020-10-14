@@ -49,6 +49,7 @@ func getToken(c *gin.Context) {
 func setPrivateRoutes(api *gin.RouterGroup) {
 	api.GET("/ping", authPing)
 	api.GET("/list/:ns", listDemo)
+	api.GET("/get/:ns/:name", getDeployBio)
 	api.POST("/setdeploy/:ns/image", setDeployImg)
 }
 
@@ -61,6 +62,17 @@ func listDemo(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, ls)
 }
+
+func getDeployBio(c *gin.Context) {
+	ns, name := c.Param("ns"), c.Param("name")
+	b, err := k8s.GetDBio(ns, name)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, b)
+}
+
 func setDeployImg(c *gin.Context) {
 	id := new(k8s.ContainerPath)
 	if err := c.BindJSON(id); err != nil {
