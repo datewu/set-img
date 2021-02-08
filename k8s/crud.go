@@ -82,7 +82,8 @@ func (c *ContainerPath) formatImg() error {
 		return errors.New("invalid imgage format")
 	}
 	if !strings.HasPrefix(a[1], prefix) {
-		return errors.New("invalid github tag")
+		return nil
+		//return errors.New("invalid github tag")
 	}
 	c.Img = a[0] + ":" + a[1][len(prefix):]
 	return nil
