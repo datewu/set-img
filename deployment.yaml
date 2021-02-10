@@ -18,21 +18,20 @@ spec:
         - name: SOME_ENV
           value: SOME_VALUE
         name: img
-        image: datewu/set-img:v0.0.1
+        image: datewu/set-img:v0.1.1
         ports:
         - containerPort: 8080
           protocol: TCP
         resources:
           limits: 
             cpu: 50m
-            memory: 60Mi
+            memory: 50Mi
         volumeMounts:
-          - name: set-img
-            mountPath: /opt
-            #securityContext:
-            #seLinuxOptions:
-            #level: "s0"
+          - name: pem
+            mountPath: /opt/private_key_for_sign.pem
+            readOnly: true
       volumes:
-        - name: set-img
-          hostPath:
-              path: /media/data/set-img
+        - name: pem
+          secret:
+            defaultMode: 420
+            secretName: set-img
