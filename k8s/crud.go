@@ -3,7 +3,6 @@ package k8s
 import (
 	"context"
 	"errors"
-	"strings"
 
 	"github.com/rs/zerolog/log"
 	apps_v1 "k8s.io/api/apps/v1"
@@ -75,20 +74,6 @@ type ContainerPath struct {
 	Img   string `json:"img" binding:"required"`
 }
 
-func (c *ContainerPath) formatImg() error {
-	const prefix = "refs/tags/"
-	a := strings.Split(c.Img, ":")
-	if len(a) != 2 {
-		return errors.New("invalid imgage format")
-	}
-	if !strings.HasPrefix(a[1], prefix) {
-		return nil
-		//return errors.New("invalid github tag")
-	}
-	c.Img = a[0] + ":" + a[1][len(prefix):]
-	return nil
-}
-
 // SetDeployImg ...
 func SetDeployImg(id *ContainerPath) error {
 	ctx := context.Background()
@@ -104,10 +89,6 @@ func SetDeployImg(id *ContainerPath) error {
 	found := false
 	for i, c := range cpy.Spec.Template.Spec.Containers {
 		if c.Name == id.CName {
-			err := id.formatImg()
-			if err != nil {
-				return err
-			}
 			log.Info().
 				Str("deploy", id.Name).
 				Str("newImg", id.Img).
