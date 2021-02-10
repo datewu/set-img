@@ -29,6 +29,7 @@ spec:
         volumeMounts:
           - name: pem
             mountPath: /opt/private_key_for_sign.pem
+            subPath: private_key_for_sign.pem
             readOnly: true
       volumes:
         - name: pem
