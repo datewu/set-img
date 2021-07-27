@@ -18,7 +18,7 @@ spec:
         - name: SOME_ENV
           value: SOME_VALUE
         name: img
-        image: datewu/set-img:v0.1.1
+        image: datewu/set-img:v0.1.4
         ports:
         - containerPort: 8080
           protocol: TCP
