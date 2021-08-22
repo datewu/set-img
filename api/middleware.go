@@ -3,7 +3,6 @@ package api
 import (
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/datewu/set-img/auth"
 	"github.com/datewu/set-img/author"
@@ -24,7 +23,7 @@ func checkAuth(next func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 		}
 		ok, err = author.Can(token)
 		if err != nil {
-			toushi.ServerErrResponse(err)(w, r)
+			toushi.ServerErrResponse(err.Error())(w, r)
 			return
 		}
 		if !ok {
@@ -43,9 +42,8 @@ func extractToken(r *http.Request) (string, error) {
 	}
 	authorizationHeader := r.Header.Get("Authorization")
 
-	headerParts := strings.Split(authorizationHeader, " ")
-	if len(headerParts) != 2 || headerParts[0] != "Bearer" {
+	if authorizationHeader == "" {
 		return "", errors.New("bad authorization header")
 	}
-	return headerParts[1], nil
+	return authorizationHeader, nil
 }
