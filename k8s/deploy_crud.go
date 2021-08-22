@@ -9,14 +9,8 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// DBio ...
-type DBio struct {
-	Name       string    `json:"name"`
-	Containers []*ConBio `json:"containers"`
-}
-
-func newDBio(d *apps_v1.Deployment) *DBio {
-	bio := &DBio{
+func newDBio(d *apps_v1.Deployment) *Bio {
+	bio := &Bio{
 		Name: d.Name,
 	}
 	containes := d.Spec.Template.Spec.Containers
@@ -32,15 +26,8 @@ func newDBio(d *apps_v1.Deployment) *DBio {
 	return bio
 }
 
-// ConBio ..
-type ConBio struct {
-	Name  string `json:"name"`
-	Image string `json:"img"`
-	Pull  string `json:"pull"`
-}
-
-// GetDBio by name
-func GetDBio(ns, name string) (*DBio, error) {
+// GetDBio get deployment Bio
+func GetDBio(ns, name string) (*Bio, error) {
 	opts := v1.GetOptions{}
 	ctx := context.Background()
 	d, err := classicalClientSet.AppsV1().Deployments(ns).Get(ctx, name, opts)
@@ -50,8 +37,8 @@ func GetDBio(ns, name string) (*DBio, error) {
 	return newDBio(d), nil
 }
 
-// ListDemo ...
-func ListDemo(ns string) ([]*DBio, error) {
+// ListDeploy list deployment bios
+func ListDeploy(ns string) ([]*Bio, error) {
 	ctx := context.Background()
 	opts := v1.ListOptions{}
 	deploys, err := classicalClientSet.AppsV1().Deployments(ns).List(ctx, opts)
@@ -59,19 +46,11 @@ func ListDemo(ns string) ([]*DBio, error) {
 		return nil, err
 	}
 	its := deploys.Items
-	res := make([]*DBio, len(its))
+	res := make([]*Bio, len(its))
 	for i, d := range its {
 		res[i] = newDBio(&d)
 	}
 	return res, nil
-}
-
-// ContainerPath ...
-type ContainerPath struct {
-	Ns    string
-	Name  string `json:"deploy_name" binding:"required"`
-	CName string `json:"container_name" binding:"required"`
-	Img   string `json:"img" binding:"required"`
 }
 
 // SetDeployImg ...

@@ -39,38 +39,78 @@ type k8sHandler struct {
 	app *gtea.App
 }
 
-func (h k8sHandler) listDemo(w http.ResponseWriter, r *http.Request) {
+func (h k8sHandler) listBio(w http.ResponseWriter, r *http.Request) {
 	ns := toushi.ReadParams(r, "ns")
-	ls, err := k8s.ListDemo(ns)
-	if err != nil {
-		toushi.ServerErrResponse(err)(w, r)
+	kind := toushi.ReadParams(r, "kind")
+	data := toushi.Envelope{}
+	switch kind {
+	case "deploy":
+		ls, err := k8s.ListDeploy(ns)
+		if err != nil {
+			toushi.ServerErrResponse(err)(w, r)
+			return
+		}
+		data["developments"] = ls
+	case "sts":
+		ls, err := k8s.ListSts(ns)
+		if err != nil {
+			toushi.ServerErrResponse(err)(w, r)
+			return
+		}
+		data["sts"] = ls
+	default:
+		err := errors.New("only support deploy/sts two kind resource")
+		toushi.BadRequestResponse(err)(w, r)
 		return
 	}
-	data := toushi.Envelope{"developments": ls}
 	toushi.OKJSON(w, r, data)
 }
 
-func (h k8sHandler) getDeployBio(w http.ResponseWriter, r *http.Request) {
+func (h k8sHandler) getBio(w http.ResponseWriter, r *http.Request) {
 	ns := toushi.ReadParams(r, "ns")
+	kind := toushi.ReadParams(r, "kind")
 	name := toushi.ReadParams(r, "name")
-	b, err := k8s.GetDBio(ns, name)
-	if err != nil {
-		toushi.ServerErrResponse(err)(w, r)
+	data := toushi.Envelope{}
+	switch kind {
+	case "deploy":
+		b, err := k8s.GetDBio(ns, name)
+		if err != nil {
+			toushi.ServerErrResponse(err)(w, r)
+			return
+		}
+		data["bio"] = b
+	case "sts":
+		b, err := k8s.GetSBio(ns, name)
+		if err != nil {
+			toushi.ServerErrResponse(err)(w, r)
+			return
+		}
+		data["bio"] = b
+	default:
+		err := errors.New("only support deploy/sts two kind resource")
+		toushi.BadRequestResponse(err)(w, r)
 		return
 	}
-	data := toushi.Envelope{"bio": b}
 	toushi.OKJSON(w, r, data)
 }
-func (h k8sHandler) setDeployImg(w http.ResponseWriter, r *http.Request) {
 
+func (h k8sHandler) setImg(w http.ResponseWriter, r *http.Request) {
 	id := new(k8s.ContainerPath)
 	err := toushi.ReadJSON(w, r, id)
 	if err != nil {
 		toushi.BadRequestResponse(err)(w, r)
 		return
 	}
-	id.Ns = toushi.ReadParams(r, "ns")
-	err = k8s.SetDeployImg(id)
+	switch id.Kind {
+	case "deploy":
+		err = k8s.SetDeployImg(id)
+	case "sts":
+		err = k8s.SetStsImg(id)
+	default:
+		err := errors.New("only support deploy/sts two kind resource")
+		toushi.BadRequestResponse(err)(w, r)
+		return
+	}
 	if err != nil {
 		toushi.ServerErrResponse(err)(w, r)
 		return

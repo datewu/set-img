@@ -19,7 +19,7 @@ func addBusinessRoutes(app *gtea.App, r *toushi.Router) {
 	r.Get("/api/v1/token", th.getToken)
 
 	r.Get("/api/v1/auth/ping", checkAuth(th.authPing))
-	r.Get("/api/v1/auth/list/:ns", checkAuth(kh.listDemo))
-	r.Get("/api/v1/auth/get/:ns/:name", checkAuth(kh.getDeployBio))
-	r.Post("/api/v1/auth/setdeploy/:ns/image", checkAuth(kh.setDeployImg))
+	r.Get("/api/v1/auth/list/:ns/:kind", checkAuth(kh.listBio))
+	r.Get("/api/v1/auth/get/:ns/:kind/:name", checkAuth(kh.getBio))
+	r.Post("/api/v1/auth/setimg", checkAuth(kh.setImg))
 }
