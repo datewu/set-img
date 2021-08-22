@@ -69,5 +69,5 @@ jobs:
        curl $URL \
         -X POST \
         -H "Authorization: $TOKEN" \
-        --data-binary '{"kind": "deploy","name":"set-img","container_name":"img","img":"${{ steps.prep.outputs.tags }}"}'
+        --data-binary '{"namespace":"wu","kind": "deploy","name":"set-img","container_name":"img","img":"${{ steps.prep.outputs.tags }}"}'
         
