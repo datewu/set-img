@@ -23,7 +23,7 @@ func checkAuth(next func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 		}
 		ok, err = author.Can(token)
 		if err != nil {
-			toushi.ServerErrResponse(err.Error())(w, r)
+			toushi.ServerErrResponse(err)(w, r)
 			return
 		}
 		if !ok {

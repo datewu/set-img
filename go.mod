@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/datewu/gtea v0.0.4
-	github.com/datewu/toushi v0.0.7
+	github.com/datewu/toushi v0.0.8
 	github.com/rs/zerolog v1.23.0
 	github.com/stretchr/testify v1.7.0
 	k8s.io/api v0.22.1
