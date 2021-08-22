@@ -3,7 +3,6 @@ package main
 import (
 	"path"
 
-	"github.com/datewu/set-img/api"
 	"github.com/datewu/set-img/auth"
 	"github.com/datewu/set-img/k8s"
 )
@@ -29,13 +28,4 @@ func initK8s() error {
 		ConfFile: *kubeconfig,
 	}
 	return k8s.InitClientSet(k8sConf)
-}
-
-func server() error {
-	apiConf := &api.Conf{
-		Mode: *modeFlag,
-		Addr: ":8080",
-	}
-
-	return api.Server(apiConf)
 }

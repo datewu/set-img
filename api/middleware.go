@@ -3,50 +3,49 @@ package api
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/datewu/set-img/auth"
 	"github.com/datewu/set-img/author"
-	"github.com/gin-gonic/gin"
+	"github.com/datewu/toushi"
 )
 
-func checkAuth(c *gin.Context) {
-	token, err := extractToken(c)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-		return
+func checkAuth(next func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
+	middle := func(w http.ResponseWriter, r *http.Request) {
+		token, err := extractToken(r)
+		if err != nil {
+			toushi.BadRequestResponse(err)(w, r)
+			return
+		}
+		ok, err := auth.Valid(token)
+		if err != nil || !ok {
+			toushi.AuthenticationRequireResponse(w, r)
+			return
+		}
+		ok, err = author.Can(token)
+		if err != nil {
+			toushi.ServerErrResponse(err)(w, r)
+			return
+		}
+		if !ok {
+			toushi.NotPermittedResponse(w, r)
+			return
+		}
+		next(w, r)
 	}
-	ok, err := auth.Valid(token)
-	if err != nil || !ok {
-		c.AbortWithStatusJSON(http.StatusUnauthorized,
-			gin.H{"token": token, "message": "bad token, cannot authentication"})
-		return
-	}
-	ok, err = author.Can(token)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-	if !ok {
-		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "has no authorization"})
-		return
-	}
-	c.Next()
+	return http.HandlerFunc(middle)
 }
 
-func extractToken(c *gin.Context) (string, error) {
-	q := c.Query("token") // query
+func extractToken(r *http.Request) (string, error) {
+	q := toushi.ReadString(r.URL.Query(), "token", "")
 	if q != "" {
 		return q, nil
 	}
-	ah := struct { // header
-		Authorization string `header:"Authorization"`
-	}{}
-	err := c.ShouldBindHeader(&ah)
-	if err != nil {
-		return "", err
+	authorizationHeader := r.Header.Get("Authorization")
+
+	headerParts := strings.Split(authorizationHeader, " ")
+	if len(headerParts) != 2 || headerParts[0] != "Bearer" {
+		return "", errors.New("bad authorization header")
 	}
-	if len(ah.Authorization) == 0 {
-		return "", errors.New("empty token")
-	}
-	return ah.Authorization, nil
+	return headerParts[1], nil
 }
