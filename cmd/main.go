@@ -2,7 +2,12 @@ package main
 
 import (
 	"github.com/datewu/gtea"
-	"github.com/datewu/set-img/api"
+	"github.com/datewu/set-img/cmd/api"
+)
+
+var (
+	version   = "1.0.0"
+	buildTime string
 )
 
 func main() {
@@ -17,8 +22,8 @@ func main() {
 	app := gtea.NewApp(cfg)
 	app.Logger.PrintInfo("APP Starting",
 		map[string]string{
-			"version":   SemVer,
-			"gitCommit": GitCommit,
+			"version":   version,
+			"gitCommit": buildTime,
 			"mode":      *modeFlag,
 		})
 

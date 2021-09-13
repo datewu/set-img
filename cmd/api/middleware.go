@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/datewu/set-img/auth"
-	"github.com/datewu/set-img/author"
+	"github.com/datewu/set-img/internal/auth"
+	"github.com/datewu/set-img/internal/author"
 	"github.com/datewu/toushi"
 )
 

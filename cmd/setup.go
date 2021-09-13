@@ -3,8 +3,8 @@ package main
 import (
 	"path"
 
-	"github.com/datewu/set-img/auth"
-	"github.com/datewu/set-img/k8s"
+	"github.com/datewu/set-img/internal/auth"
+	"github.com/datewu/set-img/internal/k8s"
 )
 
 func panicIfErr(fn func() error) {
@@ -16,7 +16,7 @@ func panicIfErr(fn func() error) {
 
 func initKey() error {
 	fn := "private_key_for_sign.pem"
-	if *modeFlag == "production" {
+	if *modeFlag == "prod" {
 		fn = path.Join("/opt", fn)
 	}
 	return auth.InitKeys(fn)

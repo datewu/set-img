@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/datewu/gtea"
-	"github.com/datewu/set-img/auth"
-	"github.com/datewu/set-img/k8s"
+	"github.com/datewu/set-img/internal/auth"
+	"github.com/datewu/set-img/internal/k8s"
 	"github.com/datewu/toushi"
 )
 
