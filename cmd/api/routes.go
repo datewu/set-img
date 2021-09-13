@@ -8,18 +8,20 @@ import (
 )
 
 func Routes(app *gtea.App) http.Handler {
-	r := toushi.New(toushi.DefaultConf())
+	r := toushi.DefaultRouterGroup()
 	addBusinessRoutes(app, r)
 	return r.Routes()
 }
 
-func addBusinessRoutes(app *gtea.App, r *toushi.Router) {
+func addBusinessRoutes(app *gtea.App, r *toushi.RouterGroup) {
 	th := &tokenHandler{app: app}
 	kh := &k8sHandler{app: app}
-	r.Get("/api/v1/token", th.getToken)
+	g := r.Group("/api/v1")
+	g.Get("/token", th.getToken)
+	a := g.Group("/auth", checkAuth)
 
-	r.Get("/api/v1/auth/ping", checkAuth(th.authPing))
-	r.Get("/api/v1/auth/list/:ns/:kind", checkAuth(kh.listBio))
-	r.Get("/api/v1/auth/get/:ns/:kind/:name", checkAuth(kh.getBio))
-	r.Post("/api/v1/auth/setimg", checkAuth(kh.setImg))
+	a.Get("/ping", th.authPing)
+	a.Get("/list/:ns/:kind", kh.listBio)
+	a.Get("/get/:ns/:kind/:name", kh.getBio)
+	a.Post("/setimg", kh.setImg)
 }
