@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"github.com/datewu/gtea"
 	"github.com/datewu/set-img/cmd/api"
 )
@@ -15,12 +17,13 @@ func main() {
 	panicIfErr(initKey)
 	panicIfErr(initK8s)
 	cfg := &gtea.Config{
-		Port:    8080,
-		Env:     *modeFlag,
-		Metrics: true,
+		Port:     8080,
+		Env:      *modeFlag,
+		Metrics:  true,
+		LogLevel: 0,
 	}
 	app := gtea.NewApp(cfg)
-	app.Logger.PrintInfo("APP Starting",
+	app.Logger.Info("APP Starting",
 		map[string]string{
 			"version":   version,
 			"gitCommit": buildTime,
@@ -28,5 +31,6 @@ func main() {
 		})
 
 	h := api.Routes(app)
-	app.Serve(h)
+	ctx := context.Background()
+	app.Serve(ctx, h)
 }

@@ -10,23 +10,24 @@ import (
 
 func checkAuth(next http.HandlerFunc) http.HandlerFunc {
 	middle := func(w http.ResponseWriter, r *http.Request) {
+		h := toushi.NewHandleHelper(w, r)
 		token, err := toushi.GetToken(r, "token")
 		if err != nil {
-			toushi.HandleBadRequestErr(err)(w, r)
+			h.BadRequestErr(err)
 			return
 		}
 		ok, err := auth.Valid(token)
 		if err != nil || !ok {
-			toushi.HandleAuthenticationRequire(w, r)
+			h.AuthenticationRequire()
 			return
 		}
 		ok, err = author.Can(token)
 		if err != nil {
-			toushi.HandleServerErr(err)(w, r)
+			h.ServerErr(err)
 			return
 		}
 		if !ok {
-			toushi.HandleNotPermitted(w, r)
+			h.NotPermitted()
 			return
 		}
 		next(w, r)
