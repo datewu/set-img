@@ -21,6 +21,7 @@ rules:
   verbs: ["*"]
   resources:
     - deployments
+    - statefulsets
 
 ---
 kind: ClusterRoleBinding
