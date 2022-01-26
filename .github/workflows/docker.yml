@@ -51,9 +51,7 @@ jobs:
         file: ./Dockerfile
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.prep.outputs.tags }}
-        tag_with_ref: true
-        repository: ${{ github.repository }}
-        build_args: |
+        build-args: |
           gitCommit=${{ github.sha }}
           semVer=${{ github.ref }}
 
