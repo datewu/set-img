@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/datewu/gtea/handler"
@@ -16,7 +17,7 @@ func checkAuth(next http.HandlerFunc) http.HandlerFunc {
 			h.BadRequestErr(err)
 			return
 		}
-		ok, err := auth.Valid(token)
+		ok, err := auth.Valid(context.Background(), auth.GithubAuth, token)
 		if err != nil || !ok {
 			h.AuthenticationRequire()
 			return
