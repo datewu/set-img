@@ -32,7 +32,7 @@ func InitClientSet(c *Conf) error {
 func loadRestConfig(conf *Conf) *rest.Config {
 	var c *rest.Config
 	var err error
-	if conf.Mode == "dev" {
+	if conf.Mode == "development" {
 		home := homedir.HomeDir()
 		conf.ConfFile = filepath.Join(home, ".kube", "config")
 	}
