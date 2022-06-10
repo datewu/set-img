@@ -2,31 +2,25 @@ package api
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/datewu/gtea"
 	"github.com/datewu/gtea/handler"
-	"github.com/datewu/set-img/internal/auth"
 	"github.com/datewu/set-img/internal/k8s"
 )
 
-type tokenHandler struct {
-	app *gtea.App
+func showPath(w http.ResponseWriter, r *http.Request) {
+	usage := "URL=/api/v1/setimg"
+	usage += `
+	curl $URL \
+	-X POST \
+	-H "Authorization: $TOKEN" \
+	--data-binary '{"namespace":"CHANGE-ME","kind": "CHANGE-ME-deploy/sts","name":"CHANGE-ME","container_name":"img","img":"${{ steps.prep.outputs.tags }}"}'
+	`
+	handler.WriteStr(w, http.StatusOK, usage, nil)
 }
 
-func (t tokenHandler) getToken(w http.ResponseWriter, r *http.Request) {
-	h := handler.NewHandleHelper(w, r)
-	// TODO needs more security
-	if !strings.HasPrefix(r.Host, "localhost:") {
-		h.BadRequestMsg("route only available to localhost")
-		return
-	}
-	token, err := auth.NewToken()
-	if err != nil {
-		h.ServerErr(err)
-		return
-	}
-	handler.OKJSON(w, handler.Envelope{"token": token})
+type tokenHandler struct {
+	app *gtea.App
 }
 
 func (t tokenHandler) authPing(w http.ResponseWriter, r *http.Request) {

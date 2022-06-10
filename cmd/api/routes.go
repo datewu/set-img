@@ -16,8 +16,8 @@ func New(app *gtea.App) http.Handler {
 func addBusinessRoutes(app *gtea.App, r *handler.RouterGroup) {
 	th := &tokenHandler{app: app}
 	kh := &k8sHandler{app: app}
+	r.Get("/", showPath)
 	g := r.Group("/api/v1")
-	g.Get("/token", th.getToken)
 	a := g.Group("/auth", checkAuth)
 
 	a.Get("/ping", th.authPing)
