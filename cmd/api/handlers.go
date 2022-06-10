@@ -9,8 +9,8 @@ import (
 )
 
 func showPath(w http.ResponseWriter, r *http.Request) {
-	usage := "URL=/api/v1/setimg"
-	usage += `
+	usage := `
+	"URL=/api/v1/setimg"
 	curl $URL \
 	-X POST \
 	-H "Authorization: $TOKEN" \
