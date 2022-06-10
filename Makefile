@@ -47,6 +47,12 @@ run/update:
 db/psql:
 	@psql ${PG_DSN}
 
+## db/generate use sqlc generated models and queries
+.PHONY: db/generate
+db/generate:
+	@echo 'sqlc generate in internal/sqlc fold'
+	@cd internal/sqlc && sqlc generate && cd ../..
+
 ## db/migrations/new name=$1: create a new database migration
 .PHONY: db/migrations/new
 db/migrations/new:

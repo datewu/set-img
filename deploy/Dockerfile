@@ -1,4 +1,4 @@
-FROM golang:1.17.6-alpine as builder
+FROM golang:1.18.3-alpine as builder
 RUN apk add ca-certificates git
 ARG current_time
 ARG git_description
@@ -14,4 +14,4 @@ FROM alpine
 RUN apk --no-cache add ca-certificates
 WORKDIR /
 COPY --from=builder /app/app-binary /app-binary
-ENTRYPOINT [ "/app-binary", "-mode", "prod" ]
+ENTRYPOINT [ "/app-binary", "-env", "production" ]
