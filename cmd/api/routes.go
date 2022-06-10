@@ -4,16 +4,16 @@ import (
 	"net/http"
 
 	"github.com/datewu/gtea"
-	"github.com/datewu/toushi"
+	"github.com/datewu/gtea/handler"
 )
 
-func Routes(app *gtea.App) http.Handler {
-	r := toushi.DefaultRouterGroup()
+func New(app *gtea.App) http.Handler {
+	r := handler.DefaultRouterGroup()
 	addBusinessRoutes(app, r)
-	return r.Routes()
+	return r
 }
 
-func addBusinessRoutes(app *gtea.App, r *toushi.RouterGroup) {
+func addBusinessRoutes(app *gtea.App, r *handler.RouterGroup) {
 	th := &tokenHandler{app: app}
 	kh := &k8sHandler{app: app}
 	g := r.Group("/api/v1")

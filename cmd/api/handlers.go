@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/datewu/gtea"
+	"github.com/datewu/gtea/handler"
 	"github.com/datewu/set-img/internal/auth"
 	"github.com/datewu/set-img/internal/k8s"
-	"github.com/datewu/toushi"
 )
 
 type tokenHandler struct {
@@ -15,7 +15,7 @@ type tokenHandler struct {
 }
 
 func (t tokenHandler) getToken(w http.ResponseWriter, r *http.Request) {
-	h := toushi.NewHandleHelper(w, r)
+	h := handler.NewHandleHelper(w, r)
 	// TODO needs more security
 	if !strings.HasPrefix(r.Host, "localhost:") {
 		h.BadRequestMsg("route only available to localhost")
@@ -26,12 +26,12 @@ func (t tokenHandler) getToken(w http.ResponseWriter, r *http.Request) {
 		h.ServerErr(err)
 		return
 	}
-	toushi.OKJSON(w, toushi.Envelope{"token": token})
+	handler.OKJSON(w, handler.Envelope{"token": token})
 }
 
 func (t tokenHandler) authPing(w http.ResponseWriter, r *http.Request) {
 	msg := "ping from auth, you've been  authenticated"
-	toushi.WriteStr(w, http.StatusOK, msg, nil)
+	handler.WriteStr(w, http.StatusOK, msg, nil)
 }
 
 type k8sHandler struct {
@@ -39,10 +39,10 @@ type k8sHandler struct {
 }
 
 func (k k8sHandler) listBio(w http.ResponseWriter, r *http.Request) {
-	ns := toushi.ReadParams(r, "ns")
-	kind := toushi.ReadParams(r, "kind")
-	data := toushi.Envelope{}
-	h := toushi.NewHandleHelper(w, r)
+	ns := handler.ReadParams(r, "ns")
+	kind := handler.ReadParams(r, "kind")
+	data := handler.Envelope{}
+	h := handler.NewHandleHelper(w, r)
 	switch kind {
 	case "deploy":
 		ls, err := k8s.ListDeploy(ns)
@@ -62,15 +62,15 @@ func (k k8sHandler) listBio(w http.ResponseWriter, r *http.Request) {
 		h.BadRequestMsg("only support deploy/sts two kind resource")
 		return
 	}
-	toushi.OKJSON(w, data)
+	handler.OKJSON(w, data)
 }
 
 func (k k8sHandler) getBio(w http.ResponseWriter, r *http.Request) {
-	ns := toushi.ReadParams(r, "ns")
-	kind := toushi.ReadParams(r, "kind")
-	name := toushi.ReadParams(r, "name")
-	data := toushi.Envelope{}
-	h := toushi.NewHandleHelper(w, r)
+	ns := handler.ReadParams(r, "ns")
+	kind := handler.ReadParams(r, "kind")
+	name := handler.ReadParams(r, "name")
+	data := handler.Envelope{}
+	h := handler.NewHandleHelper(w, r)
 	switch kind {
 	case "deploy":
 		b, err := k8s.GetDBio(ns, name)
@@ -90,13 +90,13 @@ func (k k8sHandler) getBio(w http.ResponseWriter, r *http.Request) {
 		h.BadRequestMsg("only support deploy/sts two kind resource")
 		return
 	}
-	toushi.OKJSON(w, data)
+	handler.OKJSON(w, data)
 }
 
 func (k k8sHandler) setImg(w http.ResponseWriter, r *http.Request) {
 	id := new(k8s.ContainerPath)
-	h := toushi.NewHandleHelper(w, r)
-	err := toushi.ReadJSON(w, r, id)
+	h := handler.NewHandleHelper(w, r)
+	err := handler.ReadJSON(w, r, id)
 	if err != nil {
 		h.BadRequestErr(err)
 		return
@@ -114,5 +114,5 @@ func (k k8sHandler) setImg(w http.ResponseWriter, r *http.Request) {
 		h.ServerErr(err)
 		return
 	}
-	toushi.OKJSON(w, toushi.Envelope{"payload": id})
+	handler.OKJSON(w, handler.Envelope{"payload": id})
 }

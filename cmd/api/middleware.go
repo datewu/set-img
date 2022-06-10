@@ -3,15 +3,15 @@ package api
 import (
 	"net/http"
 
+	"github.com/datewu/gtea/handler"
 	"github.com/datewu/set-img/internal/auth"
 	"github.com/datewu/set-img/internal/author"
-	"github.com/datewu/toushi"
 )
 
 func checkAuth(next http.HandlerFunc) http.HandlerFunc {
 	middle := func(w http.ResponseWriter, r *http.Request) {
-		h := toushi.NewHandleHelper(w, r)
-		token, err := toushi.GetToken(r, "token")
+		h := handler.NewHandleHelper(w, r)
+		token, err := handler.GetToken(r, "token")
 		if err != nil {
 			h.BadRequestErr(err)
 			return
