@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/datewu/gtea"
@@ -10,13 +11,14 @@ import (
 
 func showPath(w http.ResponseWriter, r *http.Request) {
 	usage := `
-	"URL=/api/v1/auth/setimg"
+	"URL=https://%s/api/v1/auth/setimg"
 	curl $URL \
 	-X POST \
 	-H "Authorization: $TOKEN" \
 	--data-binary '{"namespace":"CHANGE-ME","kind": "CHANGE-ME-deploy/sts","name":"CHANGE-ME","container_name":"img","img":"${{ steps.prep.outputs.tags }}"}'
 	`
-	handler.WriteStr(w, http.StatusOK, usage, nil)
+	msg := fmt.Sprintf(usage, r.Host)
+	handler.WriteStr(w, http.StatusOK, msg, nil)
 }
 
 type tokenHandler struct {
