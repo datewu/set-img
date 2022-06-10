@@ -6,6 +6,7 @@ import (
 
 	"github.com/datewu/gtea"
 	"github.com/datewu/gtea/jsonlog"
+	"github.com/datewu/gtea/utils"
 	"github.com/datewu/set-img/cmd/api"
 )
 
@@ -26,6 +27,9 @@ func main() {
 	flag.StringVar(&kubeconfig, "kubeconfig", "in-cluster", "path to kubernetes config file")
 
 	flag.Parse()
+
+	utils.PanicIfErr(initK8s)
+
 	cfg := &gtea.Config{
 		Port:     port,
 		Env:      env,
@@ -42,21 +46,5 @@ func main() {
 	app.AddMetaData("version", version)
 
 	ctx := context.Background()
-	// closeDB, err := db.Init(ctx)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// app.AddExitFn(closeDB)
-	// cacheDB, err := cache.Init(ctx)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// app.AddExitFn(cacheDB)
-	// daemon, err := crawl.Run(ctx, app)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// app.AddExitFn(daemon)
 	app.Serve(ctx, api.New(app))
-
 }
