@@ -4,16 +4,16 @@ import (
 	"net/http"
 
 	"github.com/datewu/gtea"
-	"github.com/datewu/gtea/handler"
+	"github.com/datewu/gtea/router"
 )
 
 func New(app *gtea.App) http.Handler {
-	r := handler.DefaultRouterGroup()
+	r := router.DefaultRoutesGroup()
 	addBusinessRoutes(app, r)
 	return r
 }
 
-func addBusinessRoutes(app *gtea.App, r *handler.RouterGroup) {
+func addBusinessRoutes(app *gtea.App, r *router.RoutesGroup) {
 	th := &tokenHandler{app: app}
 	kh := &k8sHandler{app: app}
 	r.Get("/", showPath)
