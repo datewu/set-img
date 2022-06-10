@@ -10,7 +10,7 @@ import (
 
 func showPath(w http.ResponseWriter, r *http.Request) {
 	usage := `
-	"URL=/api/v1/setimg"
+	"URL=/api/v1/auth/setimg"
 	curl $URL \
 	-X POST \
 	-H "Authorization: $TOKEN" \
