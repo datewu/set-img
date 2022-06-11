@@ -78,6 +78,9 @@ func (c *microDockerClient) CheckToken(ctx context.Context, name, pwd string) (b
 		if err == nil {
 			return true, nil
 		}
+		log.Err(err).Msg("checkBearerToken failed")
+		log.Info().Str("scheme", ch.Scheme).Interface("params", ch.Parameters).
+			Msg("challenge detail")
 	}
 	return false, errors.New("not implemented")
 }
