@@ -73,6 +73,7 @@ func (c *microDockerClient) CheckToken(ctx context.Context, name, pwd string) (b
 	if err != nil {
 		return false, err
 	}
+	log.Info().Int("len", len(c.challenges)).Msg("challenges")
 	for _, ch := range c.challenges {
 		err = c.checkBearerToken(ctx, ch)
 		if err == nil {
