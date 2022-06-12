@@ -10,15 +10,18 @@ import (
 )
 
 func showPath(w http.ResponseWriter, r *http.Request) {
-	usage := `
-	"URL=https://%s/api/v1/auth/setimg"
-	curl $URL \
+	url := `https://%s/api/v1/auth/setimg"`
+	curl := `curl $URL \
 	-X POST \
 	-H "Authorization: $TOKEN" \
 	--data-binary '{"namespace":"CHANGE-ME","kind": "CHANGE-ME-deploy/sts","name":"CHANGE-ME","container_name":"img","img":"${{ steps.prep.outputs.tags }}"}'
 	`
-	msg := fmt.Sprintf(usage, r.Host)
-	handler.WriteStr(w, http.StatusOK, msg, nil)
+	uri := fmt.Sprintf(url, r.Host)
+	data := handler.Envelope{
+		"url":  uri,
+		"curl": curl,
+	}
+	handler.OKJSON(w, data)
 }
 
 type tokenHandler struct {
