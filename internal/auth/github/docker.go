@@ -11,16 +11,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// Octet types from RFC 7230.
-type octetType byte
-
-var octetTypes [256]octetType
-
-const (
-	isToken octetType = 1 << iota
-	isSpace
-)
-
 type auth struct {
 	Username string
 	Password string
@@ -73,14 +63,14 @@ func (c *microDockerClient) CheckToken(ctx context.Context, name, pwd string) (b
 	if err != nil {
 		return false, err
 	}
-	log.Info().Int("len", len(c.challenges)).Msg("challenges")
+	log.Debug().Int("len", len(c.challenges)).Msg("challenges")
 	for _, ch := range c.challenges {
 		err = c.checkBearerToken(ctx, ch)
 		if err == nil {
 			return true, nil
 		}
 		log.Err(err).Msg("checkBearerToken failed")
-		log.Info().Str("scheme", ch.Scheme).Interface("params", ch.Parameters).
+		log.Debug().Str("scheme", ch.Scheme).Interface("params", ch.Parameters).
 			Msg("challenge detail")
 	}
 	return false, errors.New("not implemented")
@@ -121,7 +111,7 @@ func (c *microDockerClient) checkBearerToken(ctx context.Context, challenge chal
 		authReq.Header.Add("User-Agent", c.userAgent)
 	}
 
-	log.Info().Str("method", authReq.Method).Str("url", authReq.URL.Redacted()).
+	log.Debug().Str("method", authReq.Method).Str("url", authReq.URL.Redacted()).
 		Msg("checkBearerToken going to request")
 	res, err := c.client.Do(authReq)
 	if err != nil {
@@ -132,7 +122,7 @@ func (c *microDockerClient) checkBearerToken(ctx context.Context, challenge chal
 		return errors.New("unexpected status code")
 	}
 	body, err := io.ReadAll(res.Body)
-	log.Info().Msgf("%s", string(body))
+	log.Debug().Msgf("%s", string(body))
 	return nil
 }
 
