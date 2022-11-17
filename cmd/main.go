@@ -28,7 +28,7 @@ func main() {
 
 	flag.Parse()
 
-	utils.PanicIfErr(initK8s)
+	utils.PanicFn(initK8s)
 
 	cfg := &gtea.Config{
 		Port:     port,
@@ -36,7 +36,8 @@ func main() {
 		Metrics:  true,
 		LogLevel: jsonlog.LevelInfo,
 	}
-	app := gtea.NewApp(cfg)
+	ctx := context.Background()
+	app := gtea.NewApp(ctx, cfg)
 	app.Logger.Info("APP Starting",
 		map[string]string{
 			"version":   version,
@@ -44,7 +45,5 @@ func main() {
 			"mode":      env,
 		})
 	app.AddMetaData("version", version)
-
-	ctx := context.Background()
 	app.Serve(ctx, api.New(app))
 }

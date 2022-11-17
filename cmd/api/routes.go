@@ -4,13 +4,14 @@ import (
 	"net/http"
 
 	"github.com/datewu/gtea"
+	"github.com/datewu/gtea/handler"
 	"github.com/datewu/gtea/router"
 )
 
 func New(app *gtea.App) http.Handler {
 	r := router.DefaultRoutesGroup()
 	addBusinessRoutes(app, r)
-	return r
+	return r.Handler()
 }
 
 func addBusinessRoutes(app *gtea.App, r *router.RoutesGroup) {
@@ -18,7 +19,7 @@ func addBusinessRoutes(app *gtea.App, r *router.RoutesGroup) {
 	kh := &k8sHandler{app: app}
 	r.Get("/", showPath)
 	g := r.Group("/api/v1")
-	a := g.Group("/auth", checkAuth)
+	a := g.Group("/auth", handler.TokenMiddleware(checkAuth))
 
 	a.Get("/ping", th.authPing)
 	a.Get("/list/:ns/:kind", kh.listBio)
