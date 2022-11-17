@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/rs/zerolog/log"
+	"github.com/datewu/gtea/jsonlog"
 	apps_v1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -59,36 +59,28 @@ func SetStsImg(id *ContainerPath) error {
 	opts := v1.GetOptions{}
 	s, err := classicalClientSet.AppsV1().StatefulSets(id.Ns).Get(ctx, id.Name, opts)
 	if err != nil {
-		log.Error().Err(err).
-			Str("name", id.Name).
-			Msg("get sts failed")
+		jsonlog.Err(err, map[string]string{"sts": id.Name, "msg": "get sts failed"})
 		return err
 	}
 	cpy := s.DeepCopy()
 	found := false
 	for i, c := range cpy.Spec.Template.Spec.Containers {
 		if c.Name == id.CName {
-			log.Info().
-				Str("sts", id.Name).
-				Str("newImg", id.Img).
-				Msg("got new image")
+			jsonlog.Info("got new image", map[string]string{"sts": id.Name, "newImg": id.Img})
 			cpy.Spec.Template.Spec.Containers[i].Image = id.Img
 			found = true
 			break
 		}
 	}
 	if !found {
-		log.Error().Err(err).
-			Str("sts", id.Name).
-			Str("container", id.CName).
-			Msg("canot find container")
-		return errors.New("cannot find container")
+		fErr := errors.New("cannot find container")
+		jsonlog.Err(fErr, map[string]string{"sts": id.Name, "container": id.CName, "msg": "cannot find container"})
+		return fErr
 	}
 	uOpts := v1.UpdateOptions{}
 	_, err = classicalClientSet.AppsV1().StatefulSets(id.Ns).Update(ctx, cpy, uOpts)
 	if err != nil {
-		log.Error().Err(err).
-			Msg("update sts failed")
+		jsonlog.Err(err, map[string]string{"sts": id.Name, "msg": "update sts failed"})
 	}
 	return err
 }

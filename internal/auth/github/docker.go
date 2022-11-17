@@ -5,10 +5,11 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 
+	"github.com/datewu/gtea/jsonlog"
 	"github.com/datewu/set-img/internal/auth/utils"
-	"github.com/rs/zerolog/log"
 )
 
 type auth struct {
@@ -55,15 +56,13 @@ func (c *microDockerClient) CheckToken(ctx context.Context, name, pwd string) (b
 	if err != nil {
 		return false, err
 	}
-	log.Debug().Int("len", len(c.challenges)).Msg("challenges")
+	jsonlog.Debug("challenge", map[string]string{"len": strconv.Itoa(len(c.challenges))})
 	for _, ch := range c.challenges {
 		err = c.checkBearerToken(ctx, ch)
 		if err == nil {
 			return true, nil
 		}
-		log.Err(err).Msg("checkBearerToken failed")
-		log.Debug().Str("scheme", ch.Scheme).Interface("params", ch.Parameters).
-			Msg("challenge detail")
+		jsonlog.Err(err, ch.Parameters)
 	}
 	return false, errors.New("not implemented")
 }
@@ -103,8 +102,8 @@ func (c *microDockerClient) checkBearerToken(ctx context.Context, challenge chal
 		authReq.Header.Add("User-Agent", c.userAgent)
 	}
 
-	log.Debug().Str("method", authReq.Method).Str("url", authReq.URL.Redacted()).
-		Msg("checkBearerToken going to request")
+	jsonlog.Debug("checkBearerToken going to request", map[string]string{
+		"method": authReq.Method, "url": authReq.URL.Redacted()})
 	res, err := c.client.Do(authReq)
 	if err != nil {
 		return err
@@ -114,7 +113,7 @@ func (c *microDockerClient) checkBearerToken(ctx context.Context, challenge chal
 		return errors.New("unexpected status code")
 	}
 	body, err := io.ReadAll(res.Body)
-	log.Debug().Msgf("%s", string(body))
+	jsonlog.Debug("response", map[string]string{"body": string(body)})
 	return nil
 }
 
@@ -129,7 +128,6 @@ func (c *microDockerClient) detectPropertiesHelper(ctx context.Context) error {
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusUnauthorized {
 		return errors.New("not 200 and not 401")
 	}
-	log.Debug().Interface("headers", resp.Header).Msg("headers")
 	c.challenges = parseAuthHeader(resp.Header)
 	return nil
 }
@@ -137,7 +135,7 @@ func (c *microDockerClient) detectPropertiesHelper(ctx context.Context) error {
 func parseAuthHeader(header http.Header) []challenge {
 	challenges := []challenge{}
 	for _, h := range header[http.CanonicalHeaderKey("WWW-Authenticate")] {
-		log.Debug().Str("header", h).Msg("values in WWW-Authenticate")
+		jsonlog.Debug("values in WWW-Authenticate", map[string]string{"header": h})
 		p, v := utils.ConsumeParams(h)
 		if v != "" {
 			challenges = append(challenges, challenge{Scheme: v, Parameters: p})

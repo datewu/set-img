@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/rs/zerolog/log"
+	"github.com/datewu/gtea/jsonlog"
 	apps_v1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -59,36 +59,28 @@ func SetDeployImg(id *ContainerPath) error {
 	opts := v1.GetOptions{}
 	d, err := classicalClientSet.AppsV1().Deployments(id.Ns).Get(ctx, id.Name, opts)
 	if err != nil {
-		log.Error().Err(err).
-			Str("name", id.Name).
-			Msg("get deploy failed")
+		jsonlog.Err(err, map[string]string{"name": id.Name, "msg": "get deploy failed"})
 		return err
 	}
 	cpy := d.DeepCopy()
 	found := false
 	for i, c := range cpy.Spec.Template.Spec.Containers {
 		if c.Name == id.CName {
-			log.Info().
-				Str("deploy", id.Name).
-				Str("newImg", id.Img).
-				Msg("got new image")
+			jsonlog.Info("got new image tag", map[string]string{"deploy": id.Name, "image": id.Img})
 			cpy.Spec.Template.Spec.Containers[i].Image = id.Img
 			found = true
 			break
 		}
 	}
 	if !found {
-		log.Error().Err(err).
-			Str("deploy", id.Name).
-			Str("container", id.CName).
-			Msg("canot find container")
-		return errors.New("cannot find container")
+		fErr := errors.New("cannot find container")
+		jsonlog.Err(fErr, map[string]string{"deploy": id.Name, "image": id.Img, "container": id.CName})
+		return fErr
 	}
 	uOpts := v1.UpdateOptions{}
 	_, err = classicalClientSet.AppsV1().Deployments(id.Ns).Update(ctx, cpy, uOpts)
 	if err != nil {
-		log.Error().Err(err).
-			Msg("update deploy failed")
+		jsonlog.Err(err, map[string]string{"deploy": id.Name, "image": id.Img, "msg": "update deploy failed"})
 	}
 	return err
 }
