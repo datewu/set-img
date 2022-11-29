@@ -59,14 +59,14 @@ func SetStsImg(id *ContainerPath) error {
 	opts := v1.GetOptions{}
 	s, err := classicalClientSet.AppsV1().StatefulSets(id.Ns).Get(ctx, id.Name, opts)
 	if err != nil {
-		jsonlog.Err(err, map[string]string{"sts": id.Name, "msg": "get sts failed"})
+		jsonlog.Err(err, map[string]interface{}{"sts": id.Name, "msg": "get sts failed"})
 		return err
 	}
 	cpy := s.DeepCopy()
 	found := false
 	for i, c := range cpy.Spec.Template.Spec.Containers {
 		if c.Name == id.CName {
-			jsonlog.Info("got new image", map[string]string{"sts": id.Name, "newImg": id.Img})
+			jsonlog.Info("got new image", map[string]interface{}{"sts": id.Name, "newImg": id.Img})
 			cpy.Spec.Template.Spec.Containers[i].Image = id.Img
 			found = true
 			break
@@ -74,13 +74,13 @@ func SetStsImg(id *ContainerPath) error {
 	}
 	if !found {
 		fErr := errors.New("cannot find container")
-		jsonlog.Err(fErr, map[string]string{"sts": id.Name, "container": id.CName, "msg": "cannot find container"})
+		jsonlog.Err(fErr, map[string]interface{}{"sts": id.Name, "container": id.CName, "msg": "cannot find container"})
 		return fErr
 	}
 	uOpts := v1.UpdateOptions{}
 	_, err = classicalClientSet.AppsV1().StatefulSets(id.Ns).Update(ctx, cpy, uOpts)
 	if err != nil {
-		jsonlog.Err(err, map[string]string{"sts": id.Name, "msg": "update sts failed"})
+		jsonlog.Err(err, map[string]interface{}{"sts": id.Name, "msg": "update sts failed"})
 	}
 	return err
 }

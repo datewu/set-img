@@ -40,12 +40,12 @@ func loadRestConfig(conf *Conf) *rest.Config {
 		jsonlog.Debug("using in-cluster configuration", nil)
 		c, err = rest.InClusterConfig()
 	default:
-		jsonlog.Debug("using outer cluster configuration", map[string]string{"configPath": conf.ConfFile})
+		jsonlog.Debug("using outer cluster configuration", map[string]interface{}{"configPath": conf.ConfFile})
 		c, err = clientcmd.BuildConfigFromFlags("", conf.ConfFile)
 	}
 
 	if err != nil {
-		jsonlog.Err(err, map[string]string{"configPath": conf.ConfFile, "msg": "cannot load kube-client config info"})
+		jsonlog.Err(err, map[string]interface{}{"configPath": conf.ConfFile, "msg": "cannot load kube-client config info"})
 		panic(err)
 	}
 	return c

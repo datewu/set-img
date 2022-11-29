@@ -59,14 +59,14 @@ func SetDeployImg(id *ContainerPath) error {
 	opts := v1.GetOptions{}
 	d, err := classicalClientSet.AppsV1().Deployments(id.Ns).Get(ctx, id.Name, opts)
 	if err != nil {
-		jsonlog.Err(err, map[string]string{"name": id.Name, "msg": "get deploy failed"})
+		jsonlog.Err(err, map[string]interface{}{"name": id.Name, "msg": "get deploy failed"})
 		return err
 	}
 	cpy := d.DeepCopy()
 	found := false
 	for i, c := range cpy.Spec.Template.Spec.Containers {
 		if c.Name == id.CName {
-			jsonlog.Info("got new image tag", map[string]string{"deploy": id.Name, "image": id.Img})
+			jsonlog.Info("got new image tag", map[string]interface{}{"deploy": id.Name, "image": id.Img})
 			cpy.Spec.Template.Spec.Containers[i].Image = id.Img
 			found = true
 			break
@@ -74,13 +74,13 @@ func SetDeployImg(id *ContainerPath) error {
 	}
 	if !found {
 		fErr := errors.New("cannot find container")
-		jsonlog.Err(fErr, map[string]string{"deploy": id.Name, "image": id.Img, "container": id.CName})
+		jsonlog.Err(fErr, map[string]interface{}{"deploy": id.Name, "image": id.Img, "container": id.CName})
 		return fErr
 	}
 	uOpts := v1.UpdateOptions{}
 	_, err = classicalClientSet.AppsV1().Deployments(id.Ns).Update(ctx, cpy, uOpts)
 	if err != nil {
-		jsonlog.Err(err, map[string]string{"deploy": id.Name, "image": id.Img, "msg": "update deploy failed"})
+		jsonlog.Err(err, map[string]interface{}{"deploy": id.Name, "image": id.Img, "msg": "update deploy failed"})
 	}
 	return err
 }
