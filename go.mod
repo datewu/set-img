@@ -3,7 +3,7 @@ module github.com/datewu/set-img
 go 1.19
 
 require (
-	github.com/datewu/gtea v0.4.21
+	github.com/datewu/gtea v0.4.22
 	github.com/stretchr/testify v1.8.0
 	k8s.io/api v0.25.4
 	k8s.io/apimachinery v0.25.4
