@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/datewu/gtea/jsonlog"
 	apps_v1 "k8s.io/api/apps/v1"
@@ -78,6 +79,24 @@ func SetDeployImg(id *ContainerPath) error {
 		return fErr
 	}
 	uOpts := v1.UpdateOptions{}
+	zero := int32(0)
+	go func(replicas int32) {
+		time.Sleep(15 * time.Second)
+		a, rerr := classicalClientSet.AppsV1().Deployments(id.Ns).Get(ctx, id.Name, opts)
+		if rerr != nil {
+			jsonlog.Err(err, map[string]interface{}{"name": id.Name, "msg": "get deploy failed"})
+			return
+		}
+		acpy := a.DeepCopy()
+		acpy.Spec.Replicas = &replicas
+
+		_, rerr = classicalClientSet.AppsV1().Deployments(id.Ns).Update(ctx, acpy, uOpts)
+		if rerr != nil {
+			jsonlog.Err(err, map[string]interface{}{"name": id.Name, "msg": "scale deploy failed"})
+			return
+		}
+	}(*cpy.Spec.Replicas)
+	cpy.Spec.Replicas = &zero
 	_, err = classicalClientSet.AppsV1().Deployments(id.Ns).Update(ctx, cpy, uOpts)
 	if err != nil {
 		jsonlog.Err(err, map[string]interface{}{"deploy": id.Name, "image": id.Img, "msg": "update deploy failed"})
