@@ -80,14 +80,13 @@ func SetStsImg(id *ContainerPath) error {
 	}
 	uOpts := v1.UpdateOptions{}
 	zero := int32(0)
-	origin := *cpy.Spec.Replicas
 	cpy.Spec.Replicas = &zero
 	_, err = classicalClientSet.AppsV1().StatefulSets(id.Ns).Update(ctx, cpy, uOpts)
 	if err != nil {
 		jsonlog.Err(err, map[string]interface{}{"sts": id.Name, "msg": "update sts failed"})
 		return err
 	}
-	go func(replicas int32) {
+	go func() {
 		time.Sleep(10 * time.Second)
 		a, rerr := classicalClientSet.AppsV1().StatefulSets(id.Ns).Get(ctx, id.Name, opts)
 		if rerr != nil {
@@ -95,12 +94,14 @@ func SetStsImg(id *ContainerPath) error {
 			return
 		}
 		acpy := a.DeepCopy()
-		acpy.Spec.Replicas = &replicas
+		acpy.Spec.Replicas = s.Spec.Replicas
+		jsonlog.Debug("going to scale sts back replics",
+			map[string]interface{}{"*replicas": *s.Spec.Replicas, "replicas": s.Spec.Replicas})
 		_, rerr = classicalClientSet.AppsV1().StatefulSets(id.Ns).Update(ctx, acpy, uOpts)
 		if rerr != nil {
 			jsonlog.Err(rerr, map[string]interface{}{"name": id.Name, "msg": "scale sts failed"})
 			return
 		}
-	}(origin)
+	}()
 	return nil
 }

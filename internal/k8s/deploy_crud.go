@@ -80,14 +80,13 @@ func SetDeployImg(id *ContainerPath) error {
 	}
 	uOpts := v1.UpdateOptions{}
 	zero := int32(0)
-	origin := *cpy.Spec.Replicas
 	cpy.Spec.Replicas = &zero
 	_, err = classicalClientSet.AppsV1().Deployments(id.Ns).Update(ctx, cpy, uOpts)
 	if err != nil {
 		jsonlog.Err(err, map[string]interface{}{"deploy": id.Name, "image": id.Img, "msg": "update deploy failed"})
 		return err
 	}
-	go func(replicas int32) {
+	go func() {
 		time.Sleep(5 * time.Second)
 		a, rerr := classicalClientSet.AppsV1().Deployments(id.Ns).Get(ctx, id.Name, opts)
 		if rerr != nil {
@@ -95,13 +94,15 @@ func SetDeployImg(id *ContainerPath) error {
 			return
 		}
 		acpy := a.DeepCopy()
-		acpy.Spec.Replicas = &replicas
+		acpy.Spec.Replicas = d.Spec.Replicas
+		jsonlog.Debug("going to scale deploy back replics",
+			map[string]interface{}{"*replicas": *d.Spec.Replicas, "replicas": d.Spec.Replicas})
 
 		_, rerr = classicalClientSet.AppsV1().Deployments(id.Ns).Update(ctx, acpy, uOpts)
 		if rerr != nil {
 			jsonlog.Err(err, map[string]interface{}{"name": id.Name, "msg": "scale deploy failed"})
 			return
 		}
-	}(origin)
+	}()
 	return nil
 }
