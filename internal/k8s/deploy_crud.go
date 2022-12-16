@@ -87,7 +87,7 @@ func SetDeployImg(id *ContainerPath) error {
 		return err
 	}
 	go func() {
-		time.Sleep(5 * time.Second)
+		time.Sleep(25 * time.Second)
 		a, rerr := classicalClientSet.AppsV1().Deployments(id.Ns).Get(ctx, id.Name, opts)
 		if rerr != nil {
 			jsonlog.Err(err, map[string]any{"name": id.Name, "msg": "get deploy failed"})
