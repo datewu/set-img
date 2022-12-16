@@ -87,14 +87,17 @@ func SetDeployImg(id *ContainerPath) error {
 		return err
 	}
 	go func() {
-		time.Sleep(15 * time.Second)
+		time.Sleep(5 * time.Second)
 		a, rerr := classicalClientSet.AppsV1().Deployments(id.Ns).Get(ctx, id.Name, opts)
 		if rerr != nil {
 			jsonlog.Err(err, map[string]interface{}{"name": id.Name, "msg": "get deploy failed"})
 			return
 		}
 		acpy := a.DeepCopy()
-		acpy.Spec.Replicas = d.Spec.Replicas
+		//acpy.Spec.Replicas = d.Spec.Replicas
+		// debug
+		one := int32(1)
+		acpy.Spec.Replicas = &one
 		jsonlog.Debug("going to scale deploy back replics",
 			map[string]interface{}{"*replicas": *d.Spec.Replicas, "replicas": d.Spec.Replicas})
 
