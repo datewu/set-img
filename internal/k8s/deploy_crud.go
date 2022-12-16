@@ -79,8 +79,8 @@ func SetDeployImg(id *ContainerPath) error {
 		return fErr
 	}
 	uOpts := v1.UpdateOptions{}
-	zero := int32(0)
-	cpy.Spec.Replicas = &zero
+	// zero := int32(0)
+	// cpy.Spec.Replicas = &zero
 	_, err = classicalClientSet.AppsV1().Deployments(id.Ns).Update(ctx, cpy, uOpts)
 	if err != nil {
 		jsonlog.Err(err, map[string]any{"deploy": id.Name, "image": id.Img, "msg": "update deploy failed"})
