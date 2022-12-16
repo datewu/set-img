@@ -80,8 +80,15 @@ func SetStsImg(id *ContainerPath) error {
 	}
 	uOpts := v1.UpdateOptions{}
 	zero := int32(0)
+	origin := *cpy.Spec.Replicas
+	cpy.Spec.Replicas = &zero
+	_, err = classicalClientSet.AppsV1().StatefulSets(id.Ns).Update(ctx, cpy, uOpts)
+	if err != nil {
+		jsonlog.Err(err, map[string]interface{}{"sts": id.Name, "msg": "update sts failed"})
+		return err
+	}
 	go func(replicas int32) {
-		time.Sleep(15 * time.Second)
+		time.Sleep(10 * time.Second)
 		a, rerr := classicalClientSet.AppsV1().StatefulSets(id.Ns).Get(ctx, id.Name, opts)
 		if rerr != nil {
 			jsonlog.Err(rerr, map[string]interface{}{"name": id.Name, "msg": "get sts failed"})
@@ -94,11 +101,6 @@ func SetStsImg(id *ContainerPath) error {
 			jsonlog.Err(rerr, map[string]interface{}{"name": id.Name, "msg": "scale sts failed"})
 			return
 		}
-	}(*cpy.Spec.Replicas)
-	cpy.Spec.Replicas = &zero
-	_, err = classicalClientSet.AppsV1().StatefulSets(id.Ns).Update(ctx, cpy, uOpts)
-	if err != nil {
-		jsonlog.Err(err, map[string]interface{}{"sts": id.Name, "msg": "update sts failed"})
-	}
-	return err
+	}(origin)
+	return nil
 }
