@@ -28,15 +28,8 @@ type challenge struct {
 type microDockerClient struct {
 	userAgent string
 	auth
-	scope         authScope
-	challenges    []challenge
-	client        http.Client
-	registryToken string
-}
-
-type authScope struct {
-	remoteName string
-	actions    string
+	challenges []challenge
+	client     http.Client
 }
 
 func newMicroDockerClient(name, pwd string) *microDockerClient {
@@ -113,7 +106,7 @@ func (c *microDockerClient) checkBearerToken(ctx context.Context, challenge chal
 	}
 	body, err := io.ReadAll(res.Body)
 	jsonlog.Debug("response", map[string]any{"body": string(body)})
-	return nil
+	return err
 }
 
 // detectPropertiesHelper performs the work of detectProperties which executes
