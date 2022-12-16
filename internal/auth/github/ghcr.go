@@ -14,10 +14,10 @@ const (
 // Valid ...
 func Valide(ctx context.Context, token string) (bool, error) {
 	dockerCli := newMicroDockerClient(username, token)
-	jsonlog.Info("check token", map[string]interface{}{"token": token, "username": username})
+	jsonlog.Info("check token", map[string]any{"token": token, "username": username})
 	ok, err := dockerCli.CheckToken(ctx, username, token)
 	if err != nil {
-		jsonlog.Err(err, map[string]interface{}{"token": token,
+		jsonlog.Err(err, map[string]any{"token": token,
 			"username": username, "msg": "check token failed"})
 		return false, err
 	}

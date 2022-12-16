@@ -60,14 +60,14 @@ func SetStsImg(id *ContainerPath) error {
 	opts := v1.GetOptions{}
 	s, err := classicalClientSet.AppsV1().StatefulSets(id.Ns).Get(ctx, id.Name, opts)
 	if err != nil {
-		jsonlog.Err(err, map[string]interface{}{"sts": id.Name, "msg": "get sts failed"})
+		jsonlog.Err(err, map[string]any{"sts": id.Name, "msg": "get sts failed"})
 		return err
 	}
 	cpy := s.DeepCopy()
 	found := false
 	for i, c := range cpy.Spec.Template.Spec.Containers {
 		if c.Name == id.CName {
-			jsonlog.Info("got new image", map[string]interface{}{"sts": id.Name, "newImg": id.Img})
+			jsonlog.Info("got new image", map[string]any{"sts": id.Name, "newImg": id.Img})
 			cpy.Spec.Template.Spec.Containers[i].Image = id.Img
 			found = true
 			break
@@ -75,7 +75,7 @@ func SetStsImg(id *ContainerPath) error {
 	}
 	if !found {
 		fErr := errors.New("cannot find container")
-		jsonlog.Err(fErr, map[string]interface{}{"sts": id.Name, "container": id.CName, "msg": "cannot find container"})
+		jsonlog.Err(fErr, map[string]any{"sts": id.Name, "container": id.CName, "msg": "cannot find container"})
 		return fErr
 	}
 	uOpts := v1.UpdateOptions{}
@@ -83,23 +83,23 @@ func SetStsImg(id *ContainerPath) error {
 	cpy.Spec.Replicas = &zero
 	_, err = classicalClientSet.AppsV1().StatefulSets(id.Ns).Update(ctx, cpy, uOpts)
 	if err != nil {
-		jsonlog.Err(err, map[string]interface{}{"sts": id.Name, "msg": "update sts failed"})
+		jsonlog.Err(err, map[string]any{"sts": id.Name, "msg": "update sts failed"})
 		return err
 	}
 	go func() {
 		time.Sleep(15 * time.Second)
 		a, rerr := classicalClientSet.AppsV1().StatefulSets(id.Ns).Get(ctx, id.Name, opts)
 		if rerr != nil {
-			jsonlog.Err(rerr, map[string]interface{}{"name": id.Name, "msg": "get sts failed"})
+			jsonlog.Err(rerr, map[string]any{"name": id.Name, "msg": "get sts failed"})
 			return
 		}
 		acpy := a.DeepCopy()
 		acpy.Spec.Replicas = s.Spec.Replicas
 		jsonlog.Debug("going to scale sts back replics",
-			map[string]interface{}{"*replicas": *s.Spec.Replicas, "replicas": s.Spec.Replicas})
+			map[string]any{"*replicas": *s.Spec.Replicas, "replicas": s.Spec.Replicas})
 		_, rerr = classicalClientSet.AppsV1().StatefulSets(id.Ns).Update(ctx, acpy, uOpts)
 		if rerr != nil {
-			jsonlog.Err(rerr, map[string]interface{}{"name": id.Name, "msg": "scale sts failed"})
+			jsonlog.Err(rerr, map[string]any{"name": id.Name, "msg": "scale sts failed"})
 			return
 		}
 	}()

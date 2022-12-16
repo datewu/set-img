@@ -55,13 +55,13 @@ func (c *microDockerClient) CheckToken(ctx context.Context, name, pwd string) (b
 	if err != nil {
 		return false, err
 	}
-	jsonlog.Debug("challenge", map[string]interface{}{"len": len(c.challenges)})
+	jsonlog.Debug("challenge", map[string]any{"len": len(c.challenges)})
 	for _, ch := range c.challenges {
 		err = c.checkBearerToken(ctx, ch)
 		if err == nil {
 			return true, nil
 		}
-		jsonlog.Err(err, map[string]interface{}{"challenges": ch.Parameters})
+		jsonlog.Err(err, map[string]any{"challenges": ch.Parameters})
 	}
 	return false, errors.New("not implemented")
 }
@@ -101,7 +101,7 @@ func (c *microDockerClient) checkBearerToken(ctx context.Context, challenge chal
 		authReq.Header.Add("User-Agent", c.userAgent)
 	}
 
-	jsonlog.Debug("checkBearerToken going to request", map[string]interface{}{
+	jsonlog.Debug("checkBearerToken going to request", map[string]any{
 		"method": authReq.Method, "url": authReq.URL.Redacted()})
 	res, err := c.client.Do(authReq)
 	if err != nil {
@@ -112,7 +112,7 @@ func (c *microDockerClient) checkBearerToken(ctx context.Context, challenge chal
 		return errors.New("unexpected status code")
 	}
 	body, err := io.ReadAll(res.Body)
-	jsonlog.Debug("response", map[string]interface{}{"body": string(body)})
+	jsonlog.Debug("response", map[string]any{"body": string(body)})
 	return nil
 }
 
@@ -134,7 +134,7 @@ func (c *microDockerClient) detectPropertiesHelper(ctx context.Context) error {
 func parseAuthHeader(header http.Header) []challenge {
 	challenges := []challenge{}
 	for _, h := range header[http.CanonicalHeaderKey("WWW-Authenticate")] {
-		jsonlog.Debug("values in WWW-Authenticate", map[string]interface{}{"header": h})
+		jsonlog.Debug("values in WWW-Authenticate", map[string]any{"header": h})
 		p, v := utils.ConsumeParams(h)
 		if v != "" {
 			challenges = append(challenges, challenge{Scheme: v, Parameters: p})
