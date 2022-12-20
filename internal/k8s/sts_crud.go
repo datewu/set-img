@@ -87,7 +87,7 @@ func SetStsImg(id *ContainerPath) error {
 		return err
 	}
 	go func() {
-		time.Sleep(15 * time.Second)
+		time.Sleep(5 * time.Second)
 		a, rerr := classicalClientSet.AppsV1().StatefulSets(id.Ns).Get(ctx, id.Name, opts)
 		if rerr != nil {
 			jsonlog.Err(rerr, map[string]any{"name": id.Name, "msg": "get sts failed"})
