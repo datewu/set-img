@@ -2,8 +2,6 @@ package utils
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestConsumeParams(t *testing.T) {
@@ -11,6 +9,10 @@ func TestConsumeParams(t *testing.T) {
 	// h := `Bearer realm="api.example.com", scope=profile`
 
 	params, v := ConsumeParams(h)
-	assert.NotEmpty(t, v)
-	assert.NotEmpty(t, params)
+	if len(params) < 1 {
+		t.Fatal("params should not be empty")
+	}
+	if v == "" {
+		t.Fatal("newv should not be empty")
+	}
 }
