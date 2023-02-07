@@ -20,5 +20,7 @@ RUN npm run build
 FROM alpine
 RUN apk --no-cache add ca-certificates
 WORKDIR /
-COPY --from=builder /app/app-binary /app-binary
+WORKDIR /
+COPY --from=fg-builder /app/dist /front/dist
+COPY --from=bg-builder /app/app-binary /app-binary
 ENTRYPOINT [ "/app-binary", "-env", "production" ]
