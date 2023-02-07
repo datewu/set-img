@@ -1,4 +1,4 @@
-FROM golang:1.19.4-alpine as builder
+FROM golang:1.20.0-alpine3.17 as builder
 RUN apk add ca-certificates git
 ARG current_time
 ARG git_description
@@ -9,6 +9,13 @@ RUN CGO_ENABLED=0 go build -ldflags \
     -o ./app-binary ./cmd && \
     mv ./app-binary /app/ && \
     chmod +x /app/app-binary
+
+FROM node:lts-alpine as fg-builder
+WORKDIR /app
+COPY ./front/package*.json /app/
+RUN npm install 
+COPY ./front/ /app
+RUN npm run build
 
 FROM alpine
 RUN apk --no-cache add ca-certificates
