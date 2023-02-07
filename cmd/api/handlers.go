@@ -9,16 +9,29 @@ import (
 	"github.com/datewu/set-img/internal/k8s"
 )
 
+type curlCmd struct {
+	Method     string            `json:"method"`
+	Header     map[string]string `json:"headers"`
+	URL        string            `json:"url"`
+	BinaryData map[string]any    `json:"data"`
+}
+
 func showPath(w http.ResponseWriter, r *http.Request) {
 	url := `https://%s/api/v1/auth/setimg`
-	curl := `curl -XPOST $URL -H 'Authorization: $TOKEN' \
-	--data-binary '{"namespace":"CHANGE-ME","kind": "CHANGE-ME-deploy/sts","name":"CHANGE-ME","container_name":"img","img":"${{ steps.prep.outputs.tags }}"}'`
 	uri := fmt.Sprintf(url, r.Host)
-	data := handler.Envelope{
-		"url":  uri,
-		"curl": curl,
+	curl := curlCmd{
+		URL:    uri,
+		Method: "POST",
+		Header: map[string]string{"Authorization": "$TOKEN"},
+		BinaryData: map[string]any{
+			"namespace":      "CHANGE-ME",
+			"kind":           "CHANGE-ME-TO-deploy/sts",
+			"name":           "CHANGE-ME",
+			"container_name": "CHANGE-ME",
+			"img":            "${{ steps.prep.outputs.tags }}",
+		},
 	}
-	handler.OKJSON(w, data)
+	handler.OKJSON(w, curl)
 }
 
 type tokenHandler struct {
