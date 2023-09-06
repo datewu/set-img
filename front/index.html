@@ -42,30 +42,24 @@
     function myFunction() {
       // Get the text field
       var copyText = document.getElementById("url");
-
-      // Select the text field
-      // copyText.select();
-      // copyText.setSelectionRange(0, 99999); // For mobile devices
-
       // Copy the text inside the text field
       navigator.clipboard.writeText(copyText.innerText);
       var btn = document.getElementById("cp-btn");
       btn.innerText = "copied"
+      btn.blur()
     }
 
     function toogle() {
       var detail = document.getElementById("detail")
-      if (detail.style.display === 'none') {
-        detail.style.display = 'block'
-      } else {
-        detail.style.display = 'none'
-      }
       var btn = document.getElementById("more")
       if (btn.innerText === 'less') {
         btn.innerText = 'more'
+        detail.style.display = 'none'
       } else {
+        detail.style.display = 'block'
         btn.innerText = 'less'
       }
+      btn.blur()
     }
   </script>
 

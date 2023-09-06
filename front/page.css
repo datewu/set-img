@@ -85,6 +85,9 @@ h1 {
   align-items: baseline;
   width: 550px;
 }
+.url-btns > div {
+  display: flex;
+}
 
 button {
   border-radius: 8px;
