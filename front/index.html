@@ -6,48 +6,47 @@
   <link rel="icon" type="image/svg+xml" href="/fav.svg" />
   <link rel="stylesheet" href="page.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://unpkg.com/htmx.org@1.9.5" integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.5"
+    integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
+    crossorigin="anonymous"></script>
   <title>k8s管理工具</title>
 </head>
 
 <body>
-  <div>
-    <div class="App">
+  <div class="app">
+    <div>
+      <a href="https://github.com/datewu/set-img" target="_blank">
+        <img src="/fav.svg" class="logo" alt="logo">
+      </a>
+    </div>
+    <h1>kubernetes部署工具</h1>
+    <div class="card">
       <div>
-        <a href="https://github.com/datewu/set-img" target="_blank">
-          <img src="/fav.svg" class="logo" alt="logo">
-        </a>
-      </div>
-      <h1>kubernetes部署工具</h1>
-      <div class="card">
-        <div>
-          <div class="url-btns">
-            <p id="url">https://set-img.deoops.com/api/v1/auth/setimg</p>
-            <div>
-              <button id="cp-btn" onclick="myFunction()">click to copy </button>
-              <button id="more" onclick="toogle()">more</button>
-            </div>
-          </div>
-          <div id="detail">
-            <pre
-              style="width: 550px; white-space: pre-wrap; text-align: left;">
-              curl -XPOST https://set-img.deoops.com/api/v1/auth/setimg \ <br>-H 'Authorization: $TOKEN' \ <br>--data-binary  \ <br><code>{"container_name":"CHANGE-ME","img":"${{ steps.prep.outputs.tags }}","kind":"CHANGE-ME-TO-deploy/sts","name":"CHANGE-ME","namespace":"CHANGE-ME"}</code></pre>
+        <div class="url-btns">
+          <p id="url">https://set-img.deoops.com/api/v1/auth/setimg</p>
+          <div>
+            <button id="cp-btn" onclick="myFunction()">click to copy </button>
+            <button id="more" onclick="toogle()">more</button>
           </div>
         </div>
+        <div id="detail">
+          <pre style="width: 550px; white-space: pre-wrap; text-align: left;">
+              curl -XPOST https://set-img.deoops.com/api/v1/auth/setimg \ <br>-H 'Authorization: $TOKEN' \ <br>--data-binary  \ <br><code>{"container_name":"CHANGE-ME","img":"${{ steps.prep.outputs.tags }}","kind":"CHANGE-ME-TO-deploy/sts","name":"CHANGE-ME","namespace":"CHANGE-ME"}</code></pre>
+        </div>
       </div>
-      <p class="read-the-docs">Click on the set-img and React logos to learn more</p>
     </div>
+    <p class="read-the-docs">Click on the set-img and React logos to learn more</p>
   </div>
 
   <script>
     function myFunction() {
       // Get the text field
       var copyText = document.getElementById("url");
-    
+
       // Select the text field
       // copyText.select();
       // copyText.setSelectionRange(0, 99999); // For mobile devices
-    
+
       // Copy the text inside the text field
       navigator.clipboard.writeText(copyText.innerText);
       var btn = document.getElementById("cp-btn");
@@ -63,12 +62,12 @@
       }
       var btn = document.getElementById("more")
       if (btn.innerText === 'less') {
-        btn.innerText === 'more'
+        btn.innerText = 'more'
       } else {
-        btn.innerText === 'less'
+        btn.innerText = 'less'
       }
     }
-    </script>
+  </script>
 
 </body>
 
