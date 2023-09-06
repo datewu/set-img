@@ -1,3 +1,5 @@
 bin/
 set-img
 *.pem
+
+.DS_Store
