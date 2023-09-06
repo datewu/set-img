@@ -3,8 +3,9 @@ package k8s
 import (
 	"context"
 	"errors"
+	"time"
 
-	"github.com/rs/zerolog/log"
+	"github.com/datewu/gtea/jsonlog"
 	apps_v1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -59,36 +60,55 @@ func SetDeployImg(id *ContainerPath) error {
 	opts := v1.GetOptions{}
 	d, err := classicalClientSet.AppsV1().Deployments(id.Ns).Get(ctx, id.Name, opts)
 	if err != nil {
-		log.Error().Err(err).
-			Str("name", id.Name).
-			Msg("get deploy failed")
+		jsonlog.Err(err, map[string]any{"name": id.Name, "msg": "get deploy failed"})
 		return err
 	}
 	cpy := d.DeepCopy()
 	found := false
 	for i, c := range cpy.Spec.Template.Spec.Containers {
 		if c.Name == id.CName {
-			log.Info().
-				Str("deploy", id.Name).
-				Str("newImg", id.Img).
-				Msg("got new image")
+			jsonlog.Info("got new image tag", map[string]any{"deploy": id.Name, "image": id.Img})
 			cpy.Spec.Template.Spec.Containers[i].Image = id.Img
 			found = true
 			break
 		}
 	}
 	if !found {
-		log.Error().Err(err).
-			Str("deploy", id.Name).
-			Str("container", id.CName).
-			Msg("canot find container")
-		return errors.New("cannot find container")
+		fErr := errors.New("cannot find container")
+		jsonlog.Err(fErr, map[string]any{"deploy": id.Name, "image": id.Img, "container": id.CName})
+		return fErr
 	}
 	uOpts := v1.UpdateOptions{}
+	if id.Name != "set-img" {
+		zero := int32(0)
+		cpy.Spec.Replicas = &zero
+	}
 	_, err = classicalClientSet.AppsV1().Deployments(id.Ns).Update(ctx, cpy, uOpts)
 	if err != nil {
-		log.Error().Err(err).
-			Msg("update deploy failed")
+		jsonlog.Err(err, map[string]any{"deploy": id.Name, "image": id.Img, "msg": "update deploy failed"})
+		return err
 	}
-	return err
+	go func() {
+		if id.Name == "set-img" {
+			jsonlog.Debug("no scale deploy back replics for set-img")
+			return
+		}
+		time.Sleep(3 * time.Second)
+		a, rerr := classicalClientSet.AppsV1().Deployments(id.Ns).Get(ctx, id.Name, opts)
+		if rerr != nil {
+			jsonlog.Err(err, map[string]any{"name": id.Name, "msg": "get deploy failed"})
+			return
+		}
+		acpy := a.DeepCopy()
+		acpy.Spec.Replicas = d.Spec.Replicas
+		jsonlog.Debug("going to scale deploy back replics",
+			map[string]any{"*replicas": *d.Spec.Replicas, "replicas": d.Spec.Replicas})
+
+		_, rerr = classicalClientSet.AppsV1().Deployments(id.Ns).Update(ctx, acpy, uOpts)
+		if rerr != nil {
+			jsonlog.Err(err, map[string]any{"name": id.Name, "msg": "scale deploy failed"})
+			return
+		}
+	}()
+	return nil
 }

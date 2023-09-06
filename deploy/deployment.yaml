@@ -1,0 +1,108 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: set-img
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: set-img
+rules:
+- apiGroups:
+  - ""
+  verbs: ["*"]
+  resources:
+    - configmaps
+    - namespaces
+    - pods
+- apiGroups:
+  - "apps"
+  verbs: ["*"]
+  resources:
+    - deployments
+    - statefulsets
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: set-img-binding
+subjects:
+- kind: ServiceAccount
+  name: set-img
+  namespace: wu
+roleRef:
+  kind: ClusterRole
+  name: set-img
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: set-img
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: set-img
+  template:
+    metadata:
+      labels:
+        app: set-img
+    spec:
+      serviceAccountName: set-img
+      containers:
+      - env:
+        - name: SOME_ENV
+          value: SOME_VALUE
+        name: img
+        image: ghcr.io/datewu/set-img:v0.6.4
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+          name: api
+        resources:
+          limits: 
+            cpu: 50m
+            memory: 50Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: set-img
+# namespace: wu
+spec:
+  selector:
+    app: set-img
+  ports:
+  - name: name-of-service-port
+    protocol: TCP
+    port: 80
+    targetPort: api
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+  name: set-img
+spec:
+  ingressClassName: public
+  rules:
+  - host: set-img.deoops.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: set-img
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - set-img.deoops.com
+    secretName: set-img.deoops.com.tls

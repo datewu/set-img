@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"flag"
 
 	"github.com/datewu/gtea"
+	"github.com/datewu/gtea/jsonlog"
+	"github.com/datewu/gtea/utils"
 	"github.com/datewu/set-img/cmd/api"
 )
 
@@ -11,26 +14,34 @@ var (
 	version   = "1.0.0"
 	buildTime string
 )
+var (
+	port       int
+	env        string
+	kubeconfig string
+)
 
 func main() {
-	parseFlag()
-	panicIfErr(initKey)
-	panicIfErr(initK8s)
+
+	flag.IntVar(&port, "port", 8080, "API server port")
+	flag.StringVar(&env, "env", "development", "Environment (development|staging|production)")
+	flag.StringVar(&kubeconfig, "kubeconfig", "in-cluster", "path to kubernetes config file")
+	flag.Parse()
+
+	utils.PanicFn(initK8s)
 	cfg := &gtea.Config{
-		Port:     8080,
-		Env:      *modeFlag,
+		Port:     port,
+		Env:      env,
 		Metrics:  true,
-		LogLevel: 0,
+		LogLevel: jsonlog.LevelDebug,
 	}
-	app := gtea.NewApp(cfg)
+	ctx := context.Background()
+	app := gtea.NewApp(ctx, cfg)
 	app.Logger.Info("APP Starting",
-		map[string]string{
+		map[string]any{
 			"version":   version,
 			"gitCommit": buildTime,
-			"mode":      *modeFlag,
+			"mode":      env,
 		})
-
-	h := api.Routes(app)
-	ctx := context.Background()
-	app.Serve(ctx, h)
+	app.AddMetaData("version", version)
+	app.Serve(ctx, api.New(app))
 }

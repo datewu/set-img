@@ -1,27 +1,27 @@
 package auth
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
-	"encoding/base64"
+	"context"
+	"errors"
+
+	"github.com/datewu/set-img/internal/auth/github"
 )
 
-// Valid ...
-func Valid(token string) (bool, error) {
-	sig, err := base64.RawURLEncoding.DecodeString(token)
-	if err != nil {
-		return false, err
-	}
-	valid := ecdsa.VerifyASN1(&privateKey.PublicKey, digstHash[:], sig)
-	return valid, nil
-}
+type authType int
 
-// NewToken ...
-func NewToken() (string, error) {
-	sig, err := ecdsa.SignASN1(rand.Reader, privateKey, digstHash[:])
-	if err != nil {
-		return "", err
+const (
+	// GithubAuth ...
+	GithubAuth authType = iota
+)
+
+// ErrInvalidToken ...
+var ErrInvalidToken = errors.New("invalid token")
+
+// Valid ...
+func Valid(ctx context.Context, kind authType, token string) (bool, error) {
+	switch kind {
+	case GithubAuth:
+		return github.Valide(ctx, token)
 	}
-	token := base64.RawURLEncoding.EncodeToString(sig)
-	return token, nil
+	return false, ErrInvalidToken
 }

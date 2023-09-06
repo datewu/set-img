@@ -4,21 +4,29 @@ import (
 	"net/http"
 
 	"github.com/datewu/gtea"
-	"github.com/datewu/toushi"
+	"github.com/datewu/gtea/handler"
+	"github.com/datewu/gtea/handler/static"
+	"github.com/datewu/gtea/router"
 )
 
-func Routes(app *gtea.App) http.Handler {
-	r := toushi.DefaultRouterGroup()
+func New(app *gtea.App) http.Handler {
+	r := router.DefaultRoutesGroup()
+	fs := static.FS{
+		NoDir:   true,
+		TryFile: []string{},
+		Root:    "front/dist",
+	}
+	r.ServeFSWithGzip("/", fs)
 	addBusinessRoutes(app, r)
-	return r.Routes()
+	return r.Handler()
 }
 
-func addBusinessRoutes(app *gtea.App, r *toushi.RouterGroup) {
+func addBusinessRoutes(app *gtea.App, r *router.RoutesGroup) {
 	th := &tokenHandler{app: app}
 	kh := &k8sHandler{app: app}
 	g := r.Group("/api/v1")
-	g.Get("/token", th.getToken)
-	a := g.Group("/auth", checkAuth)
+	g.Get("/", showPath)
+	a := g.Group("/auth", handler.TokenMiddleware(checkAuth))
 
 	a.Get("/ping", th.authPing)
 	a.Get("/list/:ns/:kind", kh.listBio)
