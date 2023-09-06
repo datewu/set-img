@@ -1,4 +1,4 @@
-FROM golang:1.20.6-alpine3.17 as bg-builder
+FROM golang:1.21.0-alpine3.17 as bg-builder
 RUN apk add ca-certificates git
 ARG current_time
 ARG git_description
@@ -10,17 +10,10 @@ RUN CGO_ENABLED=0 go build -ldflags \
     mv ./app-binary /app/ && \
     chmod +x /app/app-binary
 
-FROM node:lts-alpine as fg-builder
-WORKDIR /app
-COPY ./front/package*.json /app/
-RUN npm install 
-COPY ./front/ /app
-RUN npm run build
-
 FROM alpine
 RUN apk --no-cache add ca-certificates
 WORKDIR /
 WORKDIR /
-COPY --from=fg-builder /app/dist /front/dist
 COPY --from=bg-builder /app/app-binary /app-binary
+COPY --from=bg-builder /app/front /front
 ENTRYPOINT [ "/app-binary", "-env", "production" ]

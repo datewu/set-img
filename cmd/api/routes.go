@@ -14,7 +14,7 @@ func New(app *gtea.App) http.Handler {
 	fs := static.FS{
 		NoDir:   true,
 		TryFile: []string{},
-		Root:    "front/dist",
+		Root:    "front",
 	}
 	r.ServeFSWithGzip("/", fs)
 	addBusinessRoutes(app, r)
