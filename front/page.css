@@ -104,11 +104,12 @@ button:hover {
 }
 
 #detail {
-  display: none;
+  display: block;
 }
 
 #detail > pre {
   max-width: 60vw;
+  text-align: left;
 }
 
 button:focus,
