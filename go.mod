@@ -1,6 +1,6 @@
 module github.com/datewu/set-img
 
-go 1.21.0
+go 1.21.1
 
 require (
 	github.com/datewu/gtea v0.5.3
