@@ -3,8 +3,8 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/static/fav.svg" />
-  <link rel="stylesheet" href="/static/page.css" />
+  <link rel="icon" type="image/svg+xml" href="/fav.svg" />
+  <link rel="stylesheet" href="/page.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://unpkg.com/htmx.org@1.9.5"
     integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
@@ -30,38 +30,32 @@
     {i{ end }i}
     <div>
       <a href="https://github.com/datewu/set-img" target="_blank">
-        <img src="/static/fav.svg" class="logo" alt="logo" />
+        <img src="/fav.svg" class="logo" alt="logo" />
       </a>
     </div>
     <h1>kubernetes部署工具</h1>
-    <div class="card">
-      <div>
-        <div class="url-btns">
-          <p id="url">https://set-img.deoops.com/api/v1/auth/setimg</p>
-          <div>
-            <button hx-on="click: copyPastboard(this)">copy</button>
-            <button hx-on="click: toogle(this)">more</button>
-          </div>
-        </div>
-        <div id="detail">
-          <pre>
-  curl -XPOST https://set-img.deoops.com/api/v1/auth/setimg \
-  -H 'Authorization: $TOKEN' \
-  --data-binary \ 
-    '{"container_name":"CHANGE-ME",
-    "img":"${{ steps.prep.outputs.tags }}",
-    "kind":"CHANGE-ME-TO-deploy/sts",
-    "name":"CHANGE-ME","namespace":"CHANGE-ME"}'
-          </pre>
+    <div>
+      <div class="url-btns">
+        <p id="url">https://set-img.deoops.com/api/v1/auth/setimg</p>
+        <div>
+          <button hx-on="click: copyPastboard(this)">copy</button>
+          <button hx-on="click: toogle(this)">more</button>
         </div>
       </div>
+      <div id="detail">
+        <pre>
+curl -XPOST https://set-img.deoops.com/api/v1/auth/setimg \
+-H 'Authorization: $TOKEN'                                \
+--data-binary                                             \ 
+'{"container_name":"CHANGE-ME", "kind":"CHANGE-deploy/sts",
+"img":"${{ steps.prep.outputs.tags }}",
+"name":"CHANGE-ME","namespace":"CHANGE-ME"}'
+          </pre>
+      </div>
     </div>
-    <p class="read-the-docs">
-      Click on the set-img and React logos to learn more
-    </p>
   </div>
   <footer>
-    <div hx-get="/version" hx-swap="outerHTML" hx-trigger="load"></div>
+    <div hx-get="/version" hx-swap="outerHTML" hx-trigger="load">version</div>
   </footer>
 
   <script>
