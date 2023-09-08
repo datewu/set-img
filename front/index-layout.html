@@ -29,9 +29,9 @@
       <a href="/my/deploys?user={i{ .User }i}">Deploys</a>
       <a href="/my/sts?user=?user={i{ .User }i}">Statefulsets</a>
     </div>
-    {i{ - else }i}
+    {i{ else }i}
     <div id="profile" hx-get="/login/github/init" hx-swap="outerHTML" hx-trigger="load"></div>
-    {i{ - end }i}
+    {i{ end }i}
     <div>
       <a href="https://github.com/datewu/set-img" target="_blank">
         <img src="/static/fav.svg" class="logo" alt="logo" />
