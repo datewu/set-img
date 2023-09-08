@@ -104,7 +104,7 @@ button:hover {
 }
 
 #detail {
-  display: block;
+  display: none;
 }
 
 #detail > pre {

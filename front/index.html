@@ -14,6 +14,7 @@
 
 <body>
   <div class="app">
+    <span hx-get="/login/github/init" hx-swap="outerHTML" hx-trigger="load"></span>
     <div>
       <a href="https://github.com/datewu/set-img" target="_blank">
         <img src="/fav.svg" class="logo" alt="logo" />
@@ -25,9 +26,7 @@
         <div class="url-btns">
           <p id="url">https://set-img.deoops.com/api/v1/auth/setimg</p>
           <div>
-            <button hx-on="click: copyPastboard(this)">
-              copy
-            </button>
+            <button hx-on="click: copyPastboard(this)">copy</button>
             <button hx-on="click: toogle(this)">more</button>
           </div>
         </div>

@@ -17,8 +17,18 @@ func New(app *gtea.App) http.Handler {
 		Root:    "front",
 	}
 	r.ServeFSWithGzip("/", fs)
+	loginRoutes(app, r)
 	addBusinessRoutes(app, r)
 	return r.Handler()
+}
+
+func loginRoutes(app *gtea.App, r *router.RoutesGroup) {
+	login := r.Group("/login")
+	gh := login.Group("/github")
+	g := &ghLoginHandler{app: app}
+	gh.Get("/init", g.init)
+	gh.Get("/callback", g.callback)
+
 }
 
 func addBusinessRoutes(app *gtea.App, r *router.RoutesGroup) {
