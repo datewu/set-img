@@ -17,6 +17,7 @@ func New(app *gtea.App) http.Handler {
 		Root:    "front",
 	}
 	r.ServeFSWithGzip("/", fs)
+	r.Get("/version", serverVersion(app))
 	loginRoutes(app, r)
 	addBusinessRoutes(app, r)
 	return r.Handler()

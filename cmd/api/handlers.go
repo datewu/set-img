@@ -13,6 +13,18 @@ import (
 	"github.com/datewu/set-img/internal/k8s"
 )
 
+func serverVersion(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
+	version := a.GetMetaData("version")
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Accept") == "application/json" || r.Header.Get("HX-Request") == "" {
+			handler.Version(version)
+			return
+		}
+		htmx := fmt.Sprintf(`<sapn>%s</span>`, version)
+		handler.OKText(w, htmx)
+	}
+}
+
 type curlCmd struct {
 	Method     string            `json:"method"`
 	Header     map[string]string `json:"headers"`
