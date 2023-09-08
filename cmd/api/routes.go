@@ -16,7 +16,7 @@ func New(app *gtea.App) http.Handler {
 		TryFile: []string{},
 		Root:    "front",
 	}
-	r.ServeFSWithGzip("/", fs)
+	r.ServeFSWithGzip("/static", fs)
 	r.Get("/", index)
 	r.Get("/version", serverVersion(app))
 	loginRoutes(app, r)
