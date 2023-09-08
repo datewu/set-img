@@ -8,10 +8,10 @@ import (
 )
 
 //go:embed index-layout.html
-var s string
+var indexHtml string
 
 var indexTpl = template.Must(template.New("index").
-	Delims("{i{", "}i}").Parse(s))
+	Delims("{i{", "}i}").Parse(indexHtml))
 
 // IndexView ...
 type IndexView struct {

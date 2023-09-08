@@ -7,10 +7,10 @@ import (
 	_ "embed"
 )
 
-//go:embed index-layout.html
-var t string
+//go:embed table.html
+var tableHtml string
 
-var tableTpl = template.Must(template.New("table").Parse(t))
+var tableTpl = template.Must(template.New("table").Parse(tableHtml))
 
 // TableView ...
 type TableView struct {
