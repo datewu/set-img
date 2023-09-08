@@ -23,11 +23,11 @@
 
 <body>
   <div class="app">
-    {{ if .User }}
-    <a href="/profile"> {{ .User }} </a>
-    {{ else }}
+    {i{ if .User }i}
+    <a href="/profile"> {i{ .User }i} </a>
+    {i{ else }i}
     <div id="profile" hx-get="/login/github/init" hx-swap="outerHTML" hx-trigger="load"></div>
-    {{ end }}
+    {i{ end }i}
     <div>
       <a href="https://github.com/datewu/set-img" target="_blank">
         <img src="/fav.svg" class="logo" alt="logo" />

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"os"
 	"strings"
@@ -13,6 +12,7 @@ import (
 	"github.com/datewu/gtea"
 	"github.com/datewu/gtea/handler"
 	"github.com/datewu/gtea/jsonlog"
+	"github.com/datewu/set-img/front"
 	"github.com/datewu/set-img/internal/k8s"
 )
 
@@ -28,8 +28,6 @@ func serverVersion(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var indexTmp = template.Must(template.New("index").ParseFiles("front/index-layout.html"))
-
 func index(w http.ResponseWriter, r *http.Request) {
 	app := struct {
 		Title string
@@ -41,18 +39,18 @@ func index(w http.ResponseWriter, r *http.Request) {
 			jsonlog.Info("no cookie found")
 		}
 		jsonlog.Err(err)
-		indexTmp.Execute(w, app)
+		front.IndexTpl.Execute(w, app)
 		return
 	}
 	//func (ghLoginHandler) userInfo(token string) (*UserInfo, error) {
 	g := ghLoginHandler{}
 	user, err := g.userInfo(token.Value)
 	if err != nil {
-		indexTmp.Execute(w, app)
+		front.IndexTpl.Execute(w, app)
 		return
 	}
 	app.User = user.Login
-	indexTmp.Execute(w, app)
+	front.IndexTpl.Execute(w, app)
 }
 
 type curlCmd struct {
