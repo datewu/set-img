@@ -2,6 +2,7 @@ package front
 
 import (
 	"html/template"
+	"io"
 
 	_ "embed"
 )
@@ -9,6 +10,14 @@ import (
 //go:embed index-layout.html
 var s string
 
-// IndexTpl for index-layout.html
-var IndexTpl = template.Must(template.New("index").
-	Delims("{i{", "}i}").Parse(s))
+var indexTpl = template.Must(template.New("index").
+	Delims("{i{", "}i}").ParseFiles(s))
+
+// IndexView ...
+type IndexView struct {
+	User string
+}
+
+func (i IndexView) Render(w io.Writer) {
+	indexTpl.Execute(w, i)
+}

@@ -29,28 +29,25 @@ func serverVersion(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	app := struct {
-		Title string
-		User  string
-	}{}
+	view := front.IndexView{}
 	token, err := r.Cookie("access_token")
 	if err != nil {
 		if errors.Is(err, http.ErrNoCookie) {
 			jsonlog.Info("no cookie found")
 		}
 		jsonlog.Err(err)
-		front.IndexTpl.Execute(w, app)
+		view.Render(w)
 		return
 	}
 	//func (ghLoginHandler) userInfo(token string) (*UserInfo, error) {
 	g := ghLoginHandler{}
 	user, err := g.userInfo(token.Value)
 	if err != nil {
-		front.IndexTpl.Execute(w, app)
+		view.Render(w)
 		return
 	}
-	app.User = user.Login
-	front.IndexTpl.Execute(w, app)
+	view.User = user.Login
+	view.Render(w)
 }
 
 type curlCmd struct {
