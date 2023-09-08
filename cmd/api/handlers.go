@@ -2,7 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 	"strings"
@@ -10,6 +12,7 @@ import (
 
 	"github.com/datewu/gtea"
 	"github.com/datewu/gtea/handler"
+	"github.com/datewu/gtea/jsonlog"
 	"github.com/datewu/set-img/internal/k8s"
 )
 
@@ -23,6 +26,33 @@ func serverVersion(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 		htmx := fmt.Sprintf(`<sapn>%s</span>`, version)
 		handler.OKText(w, htmx)
 	}
+}
+
+var indexTmp = template.Must(template.New("index").ParseFiles("front/index-layout.html"))
+
+func index(w http.ResponseWriter, r *http.Request) {
+	app := struct {
+		Title string
+		User  string
+	}{}
+	token, err := r.Cookie("access_token")
+	if err != nil {
+		if errors.Is(err, http.ErrNoCookie) {
+			jsonlog.Info("no cookie found")
+		}
+		jsonlog.Err(err)
+		indexTmp.Execute(w, app)
+		return
+	}
+	//func (ghLoginHandler) userInfo(token string) (*UserInfo, error) {
+	g := ghLoginHandler{}
+	user, err := g.userInfo(token.Value)
+	if err != nil {
+		indexTmp.Execute(w, app)
+		return
+	}
+	app.User = user.Login
+	indexTmp.Execute(w, app)
 }
 
 type curlCmd struct {
@@ -210,6 +240,7 @@ func (ghLoginHandler) getToken(code string) (*GhToken, error) {
 	}
 	return &token, nil
 }
+
 func (ghLoginHandler) userInfo(token string) (*UserInfo, error) {
 	req, err := http.NewRequest("GET", "https://api.github.com/user", nil)
 	if err != nil {
@@ -250,12 +281,11 @@ func (g ghLoginHandler) callback(w http.ResponseWriter, r *http.Request) {
 		handler.ServerErr(w, err)
 		return
 	}
-	user, err := g.userInfo(token.AccessToken)
-	if err != nil {
-		handler.ServerErr(w, err)
-		return
-	}
+	// user, err := g.userInfo(token.AccessToken)
+	// if err != nil {
+	// 	handler.ServerErr(w, err)
+	// 	return
+	// }
 	handler.SetSimpleCookie(w, r, "access_token", token.AccessToken)
-	htmx := fmt.Sprintf(` <a href="/profile">%s</a> `, user.Login)
-	handler.OKText(w, htmx)
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
