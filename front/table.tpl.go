@@ -10,7 +10,7 @@ import (
 //go:embed index-layout.html
 var t string
 
-var tableTpl = template.Must(template.New("index").Parse(t))
+var tableTpl = template.Must(template.New("table").Parse(t))
 
 // TableView ...
 type TableView struct {
