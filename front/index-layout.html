@@ -9,7 +9,7 @@
   <script src="https://unpkg.com/htmx.org@1.9.5"
     integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
     crossorigin="anonymous"></script>
-  <title> {{ or .Title "k8s管理工具" }}</title>
+  <title> {i{ or .Title "k8s管理工具" }i}</title>
   <script>
     function getCookie(name) {
       const value = document.cookie
@@ -24,13 +24,13 @@
 <body>
   <div class="app">
     {i{ if .User }i}
-    <a href="/profile"> {i{ .User }i} </a>
+    <a hx-boost="true" href="/profile"> {i{ .User }i} </a>
     {i{ else }i}
     <div id="profile" hx-get="/login/github/init" hx-swap="outerHTML" hx-trigger="load"></div>
     {i{ end }i}
     <div>
       <a href="https://github.com/datewu/set-img" target="_blank">
-        <img src="/fav.svg" class="logo" alt="logo" />
+        <img src="/static/fav.svg" class="logo" alt="logo" />
       </a>
     </div>
     <h1>kubernetes部署工具</h1>
