@@ -24,7 +24,11 @@
 <body hx-boost="true">
   <div class="app">
     {i{ if .User }i}
-    <a href="/profile"> {i{ .User }i} </a>
+    <div hx-target="#content">
+      <a href="/my/profile?user={i{ .User }i}"> {i{ .User }i} </a>
+      <a href="/my/deploys?user={i{ .User }i}">Deploys</a>
+      <a href="/my/sts?user=?user={i{ .User }i}">Statefulsets</a>
+    </div>
     {i{ - else }i}
     <div id="profile" hx-get="/login/github/init" hx-swap="outerHTML" hx-trigger="load"></div>
     {i{ - end }i}
@@ -34,7 +38,7 @@
       </a>
     </div>
     <h1>kubernetes部署工具</h1>
-    <div>
+    <div id="content">
       <div class="url-btns">
         <p id="url">https://set-img.deoops.com/api/v1/auth/setimg</p>
         <div>

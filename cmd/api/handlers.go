@@ -276,11 +276,46 @@ func (g ghLoginHandler) callback(w http.ResponseWriter, r *http.Request) {
 		handler.ServerErr(w, err)
 		return
 	}
-	// user, err := g.userInfo(token.AccessToken)
-	// if err != nil {
-	// 	handler.ServerErr(w, err)
-	// 	return
-	// }
 	handler.SetSimpleCookie(w, r, "access_token", token.AccessToken)
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+}
+
+type myHandler struct {
+	app   *gtea.App
+	user  string
+	token string
+}
+
+func (m *myHandler) middlerware(next http.HandlerFunc) http.HandlerFunc {
+	middle := func(w http.ResponseWriter, r *http.Request) {
+		user := handler.ReadQuery(r, "user", "")
+		if user == "" {
+			handler.BadRequestMsg(w, "missing user")
+			return
+		}
+		m.user = user
+		co, err := r.Cookie("access_token")
+		if err != nil {
+			handler.BadRequestMsg(w, "missing access_token cookie")
+			return
+		}
+		m.token = co.Value
+		next(w, r)
+	}
+	return middle
+}
+
+func (m *myHandler) profile(w http.ResponseWriter, r *http.Request) {
+	htmx := fmt.Sprintf(`<span> hello %s</span>`, m.user)
+	handler.OKText(w, htmx)
+}
+
+func (m *myHandler) deploys(w http.ResponseWriter, r *http.Request) {
+	view := front.TableView{TODO: "todo deployments table"}
+	view.Render(w)
+}
+
+func (m *myHandler) sts(w http.ResponseWriter, r *http.Request) {
+	view := front.TableView{TODO: "todo statefulset table"}
+	view.Render(w)
 }

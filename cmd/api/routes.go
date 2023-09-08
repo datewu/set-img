@@ -20,6 +20,7 @@ func New(app *gtea.App) http.Handler {
 	r.Get("/", index)
 	r.Get("/version", serverVersion(app))
 	loginRoutes(app, r)
+	myRoutes(app, r)
 	addBusinessRoutes(app, r)
 	return r.Handler()
 }
@@ -30,6 +31,15 @@ func loginRoutes(app *gtea.App, r *router.RoutesGroup) {
 	g := &ghLoginHandler{app: app}
 	gh.Get("/init", g.init)
 	gh.Get("/callback", g.callback)
+
+}
+
+func myRoutes(app *gtea.App, r *router.RoutesGroup) {
+	h := &myHandler{app: app}
+	my := r.Group("/my", h.middlerware)
+	my.Get("/profile", h.profile)
+	my.Get("/deploys", h.deploys)
+	my.Get("/sts", h.sts)
 
 }
 

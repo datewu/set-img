@@ -11,7 +11,7 @@ import (
 var s string
 
 var indexTpl = template.Must(template.New("index").
-	Delims("{i{", "}i}").ParseFiles(s))
+	Delims("{i{", "}i}").Parse(s))
 
 // IndexView ...
 type IndexView struct {
