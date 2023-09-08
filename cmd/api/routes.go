@@ -14,7 +14,7 @@ func New(app *gtea.App) http.Handler {
 	fs := static.FS{
 		NoDir:   true,
 		TryFile: []string{},
-		Root:    "front",
+		Root:    "front/static",
 	}
 	r.ServeFSWithGzip("/static", fs)
 	r.Get("/", index)

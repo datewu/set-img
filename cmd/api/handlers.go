@@ -262,7 +262,7 @@ func (ghLoginHandler) userInfo(token string) (*UserInfo, error) {
 
 func (ghLoginHandler) init(w http.ResponseWriter, r *http.Request) {
 	htmx := fmt.Sprintf(`
-	<a href="https://github.com/login/oauth/authorize?client_id=%s">Login with GitHub</a>
+	<a hx-boost="false" href="https://github.com/login/oauth/authorize?client_id=%s">Login with GitHub</a>
 	`, os.Getenv("GITHUB-APP-CID"))
 	handler.OKText(w, htmx)
 }
