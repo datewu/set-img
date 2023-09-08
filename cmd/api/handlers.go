@@ -23,7 +23,7 @@ func serverVersion(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 			handler.Version(version)
 			return
 		}
-		htmx := fmt.Sprintf(`<sapn>%s</span>`, version)
+		htmx := fmt.Sprintf(`<span>%s</span>`, version)
 		handler.OKText(w, htmx)
 	}
 }
