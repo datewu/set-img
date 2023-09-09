@@ -38,8 +38,19 @@ func GetSBio(ns, name string) (*Bio, error) {
 	return newSBio(s), nil
 }
 
-// ListSts list all statefulset bio in :ns
-func ListSts(ns string) ([]*Bio, error) {
+// ListStsWithLables list statefulset
+func ListStsWithLabels(ns, label string) ([]apps_v1.StatefulSet, error) {
+	ctx := context.Background()
+	opts := v1.ListOptions{LabelSelector: label}
+	stses, err := classicalClientSet.AppsV1().StatefulSets(ns).List(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return stses.Items, nil
+}
+
+// ListStsBios list all statefulset bio in :ns
+func ListStsBios(ns string) ([]*Bio, error) {
 	ctx := context.Background()
 	opts := v1.ListOptions{}
 	stses, err := classicalClientSet.AppsV1().StatefulSets(ns).List(ctx, opts)
@@ -54,14 +65,29 @@ func ListSts(ns string) ([]*Bio, error) {
 	return res, nil
 }
 
+// SetStsImgWithLabel ...
+func SetStsImgWithLabel(id *ContainerPath, label ...string) error {
+	return setStsImg(id, label...)
+}
+
 // SetStsImg update statefulset image field
 func SetStsImg(id *ContainerPath) error {
+	return setStsImg(id)
+}
+
+func setStsImg(id *ContainerPath, labels ...string) error {
 	ctx := context.Background()
 	opts := v1.GetOptions{}
 	s, err := classicalClientSet.AppsV1().StatefulSets(id.Ns).Get(ctx, id.Name, opts)
 	if err != nil {
 		jsonlog.Err(err, map[string]any{"sts": id.Name, "msg": "get sts failed"})
 		return err
+	}
+	if labels != nil {
+		ls := s.GetLabels()
+		if err = checkLabels(ls, labels); err != nil {
+			return err
+		}
 	}
 	cpy := s.DeepCopy()
 	found := false

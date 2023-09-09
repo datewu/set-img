@@ -1,4 +1,33 @@
 <table>
-  {{ .TODO }}
-
+  <tr>
+    <th>{{ or .Description "deployments" }}</th>
+  </tr>
+  <tr>
+    <th>Name</th>
+    <th>Replicas</th>
+    <th>Age</th>
+    <th>Image</th>
+    <th>Edit image Tag</th>
+  </tr>
+  {{ $ns := .Namespace}}
+  {{ $kind := .Kind}}
+  {{ range .Data}}
+  <tr>
+    {{ $rowspan := len .Containers }}
+    <td rowspan="{{ $rowspan }}">{{ .Name }}</td>
+    <td rowspan="{{ $rowspan }}">{{ .Replicas }}</td>
+    <td rowspan="{{ $rowspan }}">{{ .Age }}</td>
+    {{ $name := .Name}}
+    {{ range .Containers }}
+    <form hx-put="/my/update/{{ $ns }}/{{ $kind }}/{{ $name }}?container={{ .Name }}">
+      <td> <input name="image" type="text" value="{{ .Image }}" /> </td>
+      <td> <button type="submit"> update </button> </td>
+    </form>
+    {{ end }}
+  </tr>
+  {{ else }}
+  <tr>
+    <td>no data</td>
+    {{ end}}
+  </tr>
 </table>

@@ -38,8 +38,19 @@ func GetDBio(ns, name string) (*Bio, error) {
 	return newDBio(d), nil
 }
 
-// ListDeploy list deployment bios
-func ListDeploy(ns string) ([]*Bio, error) {
+// ListDeployWithLabels list deployment by label
+func ListDeployWithLabels(ns, label string) ([]apps_v1.Deployment, error) {
+	ctx := context.Background()
+	opts := v1.ListOptions{LabelSelector: label}
+	deploys, err := classicalClientSet.AppsV1().Deployments(ns).List(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return deploys.Items, nil
+}
+
+// ListBios list deployment bios
+func ListBios(ns string) ([]*Bio, error) {
 	ctx := context.Background()
 	opts := v1.ListOptions{}
 	deploys, err := classicalClientSet.AppsV1().Deployments(ns).List(ctx, opts)
@@ -54,14 +65,29 @@ func ListDeploy(ns string) ([]*Bio, error) {
 	return res, nil
 }
 
+// SetDeployImgWithLabel ...
+func SetDeployImgWithLabel(id *ContainerPath, label ...string) error {
+	return setDeployImg(id, label...)
+}
+
 // SetDeployImg ...
 func SetDeployImg(id *ContainerPath) error {
+	return setDeployImg(id)
+}
+
+func setDeployImg(id *ContainerPath, labels ...string) error {
 	ctx := context.Background()
 	opts := v1.GetOptions{}
 	d, err := classicalClientSet.AppsV1().Deployments(id.Ns).Get(ctx, id.Name, opts)
 	if err != nil {
 		jsonlog.Err(err, map[string]any{"name": id.Name, "msg": "get deploy failed"})
 		return err
+	}
+	if labels != nil {
+		ls := d.GetLabels()
+		if err = checkLabels(ls, labels); err != nil {
+			return err
+		}
 	}
 	cpy := d.DeepCopy()
 	found := false

@@ -94,14 +94,14 @@ func (k k8sHandler) listBio(w http.ResponseWriter, r *http.Request) {
 	data := handler.Envelope{}
 	switch kind {
 	case "deploy":
-		ls, err := k8s.ListDeploy(ns)
+		ls, err := k8s.ListBios(ns)
 		if err != nil {
 			handler.ServerErr(w, err)
 			return
 		}
 		data["developments"] = ls
 	case "sts":
-		ls, err := k8s.ListSts(ns)
+		ls, err := k8s.ListStsBios(ns)
 		if err != nil {
 			handler.ServerErr(w, err)
 			return
@@ -288,18 +288,21 @@ type myHandler struct {
 
 func (m *myHandler) middlerware(next http.HandlerFunc) http.HandlerFunc {
 	middle := func(w http.ResponseWriter, r *http.Request) {
-		user := handler.ReadQuery(r, "user", "")
-		if user == "" {
-			handler.BadRequestMsg(w, "missing user")
-			return
-		}
-		m.user = user
 		co, err := r.Cookie("access_token")
 		if err != nil {
 			handler.BadRequestMsg(w, "missing access_token cookie")
 			return
 		}
-		m.token = co.Value
+		t := co.Value
+		gh := ghLoginHandler{}
+		user, err := gh.userInfo(t)
+		if err != nil {
+			handler.ClearSimpleCookie(w, "access_token")
+			handler.ServerErr(w, err)
+			return
+		}
+		m.user = user.Login
+		m.token = t
 		next(w, r)
 	}
 	return middle
@@ -311,11 +314,35 @@ func (m *myHandler) profile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *myHandler) deploys(w http.ResponseWriter, r *http.Request) {
-	view := front.TableView{TODO: "todo deployments table"}
+	ns := handler.ReadQuery(r, "ns", "wu")
+	view := &front.TableView{
+		Description: "deployments by " + m.user,
+		Namespace:   ns,
+		Kind:        "deploy",
+	}
+	label := fmt.Sprintf("image-user=%s", m.user)
+	ds, err := k8s.ListDeployWithLabels(ns, label)
+	if err != nil {
+		handler.ServerErr(w, err)
+		return
+	}
+	view.AddDeploys(ds)
 	view.Render(w)
 }
 
 func (m *myHandler) sts(w http.ResponseWriter, r *http.Request) {
-	view := front.TableView{TODO: "todo statefulset table"}
+	ns := handler.ReadQuery(r, "ns", "wu")
+	view := &front.TableView{
+		Description: "statefulsets by " + m.user,
+		Namespace:   ns,
+		Kind:        "sts",
+	}
+	label := fmt.Sprintf("image-user=%s", m.user)
+	ss, err := k8s.ListStsWithLabels(ns, label)
+	if err != nil {
+		handler.ServerErr(w, err)
+		return
+	}
+	view.AddSts(ss)
 	view.Render(w)
 }

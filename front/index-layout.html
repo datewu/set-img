@@ -25,14 +25,14 @@
   <div class="app">
     {i{ if .User }i}
     <div hx-target="#content">
-      <a href="/my/profile?user={i{ .User }i}"> {i{ .User }i} </a>
-      <a href="/my/deploys?user={i{ .User }i}">Deploys</a>
-      <a href="/my/sts?user=?user={i{ .User }i}">Statefulsets</a>
+      <a href="/my/profile"> {i{ .User }i} </a>
+      <a href="/my/deploys">Deploys</a>
+      <a href="/my/sts">Statefulsets</a>
     </div>
     {i{ else }i}
     <div id="profile" hx-get="/login/github/init" hx-swap="outerHTML" hx-trigger="load"></div>
     {i{ end }i}
-    <div hx-disable="true">
+    <div hx-disable>
       <a href="https://github.com/datewu/set-img" target="_blank">
         <img src="/static/fav.svg" class="logo" alt="logo" />
       </a>
