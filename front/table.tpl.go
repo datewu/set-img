@@ -3,6 +3,7 @@ package front
 import (
 	"html/template"
 	"io"
+	"time"
 
 	apps "k8s.io/api/apps/v1"
 
@@ -51,7 +52,7 @@ func newDeployResource(d *apps.Deployment) *Resource {
 	res := &Resource{
 		Name:     d.Name,
 		Replicas: int(*d.Spec.Replicas),
-		Age:      d.ObjectMeta.CreationTimestamp.Time.String(),
+		Age:      time.Since(d.ObjectMeta.CreationTimestamp.Time).String(),
 	}
 	containes := d.Spec.Template.Spec.Containers
 	cs := make([]Container, len(containes))
@@ -68,7 +69,7 @@ func newStsResource(s *apps.StatefulSet) *Resource {
 	res := &Resource{
 		Name:     s.Name,
 		Replicas: int(*s.Spec.Replicas),
-		Age:      s.ObjectMeta.CreationTimestamp.Time.String(),
+		Age:      time.Since(s.ObjectMeta.CreationTimestamp.Time).String(),
 	}
 	containes := s.Spec.Template.Spec.Containers
 	cs := make([]Container, len(containes))
