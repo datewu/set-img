@@ -45,14 +45,15 @@ type Resource struct {
 	Containers []Container
 	Name       string
 	Replicas   int
-	Age        string
+	Age        time.Duration
 }
 
 func newDeployResource(d *apps.Deployment) *Resource {
 	res := &Resource{
 		Name:     d.Name,
 		Replicas: int(*d.Spec.Replicas),
-		Age:      time.Since(d.ObjectMeta.CreationTimestamp.Time).String(),
+		Age: time.Now().Round(time.Second).
+			Sub((d.ObjectMeta.GetCreationTimestamp().Round(time.Second))),
 	}
 	containes := d.Spec.Template.Spec.Containers
 	cs := make([]Container, len(containes))
@@ -69,7 +70,8 @@ func newStsResource(s *apps.StatefulSet) *Resource {
 	res := &Resource{
 		Name:     s.Name,
 		Replicas: int(*s.Spec.Replicas),
-		Age:      time.Since(s.ObjectMeta.CreationTimestamp.Time).String(),
+		Age: time.Now().Round(time.Second).
+			Sub((s.ObjectMeta.GetCreationTimestamp().Round(time.Second))),
 	}
 	containes := s.Spec.Template.Spec.Containers
 	cs := make([]Container, len(containes))
