@@ -25,7 +25,8 @@
       <input type="hidden" name="ns" value="{{ $ns }}">
       <input type="hidden" name="kind" value="{{ $kind }}">
       <input type="hidden" name="name" value="{{ $name }}">
-      <input type="text" value="{{ .Image }}" />
+      <input type="hidden" name="cname" value="{{ .Name }}">
+      <input required type="text" name="image" value="{{ .Image }}" />
     </td>
     {{ end }}
   </tr>
@@ -38,7 +39,8 @@
       <input type="hidden" name="ns" value="{{ $ns }}">
       <input type="hidden" name="kind" value="{{ $kind }}">
       <input type="hidden" name="name" value="{{ $name }}">
-      <input type="text" value="{{ .Image }}" />
+      <input type="hidden" name="cname" value="{{ .Name }}">
+      <input required type="text" name="image" value="{{ .Image }}" />
     </td>
   </tr>
   {{ end }}

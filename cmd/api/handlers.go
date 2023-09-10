@@ -346,3 +346,7 @@ func (m *myHandler) sts(w http.ResponseWriter, r *http.Request) {
 	view.AddSts(ss)
 	view.Render(w)
 }
+
+func (m *myHandler) updateResouce(w http.ResponseWriter, r *http.Request) {
+	handler.ServerErr(w, errors.New("todo"))
+}
