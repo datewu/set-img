@@ -6,8 +6,8 @@
     <th>Name</th>
     <th>Replicas</th>
     <th>Age</th>
-    <th>Image</th>
-    <th>Edit image Tag</th>
+    <th>Container Name</th>
+    <th>Image Tag</th>
   </tr>
   {{ $ns := .Namespace}}
   {{ $kind := .Kind}}
@@ -19,11 +19,14 @@
     <td rowspan="{{ $rowspan }}">{{ .Age }}</td>
     {{ $name := .Name}}
     {{ range .Containers }}
-    <form hx-put="/my/update/{{ $ns }}/{{ $kind }}/{{ $name }}?container={{ .Name }}">
-      <td> <input name="image" type="text" value="{{ .Image }}" /> </td>
-      <td> <button type="submit"> update </button> </td>
-    </form>
-    {{ end }}
+  <tr hx-put="/my/update/resource" hx-include="this">
+    <input type="hidden" name="ns" value="{{ $ns }}">
+    <input type="hidden" name="kind" value="{{ $kind }}">
+    <input type="hidden" name="name" value="{{ $name }}">
+    <td> <input disabled type="text" name="cname" value=" {{ .Name }}" /></td>
+    <td> <input type="text" value="{{ .Image }}" /> </td>
+  </tr>
+  {{ end }}
   </tr>
   {{ else }}
   <tr>
