@@ -18,16 +18,34 @@
     <td rowspan="{{ $rowspan }}">{{ .Replicas }}</td>
     <td rowspan="{{ $rowspan }}">{{ .Age }}</td>
     {{ $name := .Name}}
-    {{ range .Containers }}
-  <tr hx-put="/my/update/resource" hx-include="this">
-    <input type="hidden" name="ns" value="{{ $ns }}">
-    <input type="hidden" name="kind" value="{{ $kind }}">
-    <input type="hidden" name="name" value="{{ $name }}">
-    <td> <input disabled type="text" name="cname" value=" {{ .Name }}" /></td>
-    <td> <input type="text" value="{{ .Image }}" /> </td>
+    {{ range $index, $element := .Containers }}
+    {{if gt $index 0}}{{break}}{{end}}
+    <td>{{ .Name}}</td>
+    <td hx-put="/my/update/resource" hx-trigger="change" hx-include="this">
+      <input type="hidden" name="ns" value="{{ $ns }}">
+      <input type="hidden" name="kind" value="{{ $kind }}">
+      <input type="hidden" name="name" value="{{ $name }}">
+      <input type="text" value="{{ .Image }}" />
+    </td>
+    {{ end }}
+  </tr>
+
+  {{ range $index, $element := .Containers }}
+  {{if eq $index 0}}{{continue}}{{end}}
+  <tr>
+    <td>{{ .Name}}</td>
+    <td hx-put="/my/update/resource" hx-trigger="change" hx-include="this">
+      <input type="hidden" name="ns" value="{{ $ns }}">
+      <input type="hidden" name="kind" value="{{ $kind }}">
+      <input type="hidden" name="name" value="{{ $name }}">
+      <input type="text" value="{{ .Image }}" />
+    </td>
   </tr>
   {{ end }}
-  </tr>
+
+
+
+
   {{ else }}
   <tr>
     <td>no data</td>

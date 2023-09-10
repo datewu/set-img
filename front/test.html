@@ -29,19 +29,29 @@
 
         <tr>
 
-            <td rowspan="1">vpn</td>
-            <td rowspan="1">1</td>
-            <td rowspan="1">845h19m7s</td>
+            <td rowspan="2">vpn</td>
+            <td rowspan="2">1</td>
+            <td rowspan="2">845h19m7s</td>
 
 
-        <tr hx-put="/my/update/resource" hx-include="this">
-            <input type="hidden" name="ns" value="wu">
-            <input type="hidden" name="kind" value="deploy">
-            <input type="hidden" name="name" value="vpn">
-            <td> <input disabled type="text" name="cname" value=" vpn" /></td>
-            <td> <input type="text" value="ghcr.io/datewu/vpn:v0.5.3" /> </td>
+            <td>vpn</td>
+            <td hx-put="/my/update/resource" hx-trigger="change" hx-include="this">
+                <input type="hidden" name="ns" value="wu">
+                <input type="hidden" name="kind" value="deploy">
+                <input type="hidden" name="name" value="vpn">
+                <input type="hidden" name="cname" value="vpn">
+                <input required type="text" name="image" value="ghcr.io/datewu/vpn:v0.5.3" />
+            </td>
         </tr>
-
+        <tr>
+            <td>vpn2</td>
+            <td hx-put="/my/update/resource" hx-trigger="change" hx-include="this">
+                <input type="hidden" name="ns" value="wu">
+                <input type="hidden" name="kind" value="deploy">
+                <input type="hidden" name="name" value="vpn">
+                <input type="hidden" name="cname" value="vpn2">
+                <input required type="text" name="image" value="ghcr.io/datewu/vpn2:v0.5.3" />
+            </td>
         </tr>
 
         <tr>
