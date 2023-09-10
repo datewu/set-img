@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/static/fav.svg" />
+    <link rel="stylesheet" href="/static/page.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://unpkg.com/htmx.org@1.9.5"
+        integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
+        crossorigin="anonymous"></script>
+    <title>k8s管理工具</title>
+</head>
+
+<body hx-boost="true">
+    <table>
+        <tr>
+            <th>deployments by datewu</th>
+        </tr>
+        <tr>
+            <th>Name</th>
+            <th>Replicas</th>
+            <th>Age</th>
+            <th>Container Name</th>
+            <th>Image Tag</th>
+        </tr>
+
+
+
+        <tr>
+
+            <td rowspan="1">vpn</td>
+            <td rowspan="1">1</td>
+            <td rowspan="1">845h19m7s</td>
+
+
+        <tr hx-put="/my/update/resource" hx-include="this">
+            <input type="hidden" name="ns" value="wu">
+            <input type="hidden" name="kind" value="deploy">
+            <input type="hidden" name="name" value="vpn">
+            <td> <input disabled type="text" name="cname" value=" vpn" /></td>
+            <td> <input type="text" value="ghcr.io/datewu/vpn:v0.5.3" /> </td>
+        </tr>
+
+        </tr>
+
+        <tr>
+
+            <td rowspan="1">ss</td>
+            <td rowspan="1">1</td>
+            <td rowspan="1">870h5m10s</td>
+
+
+        <tr hx-put="/my/update/resource" hx-include="this">
+            <input type="hidden" name="ns" value="wu">
+            <input type="hidden" name="kind" value="deploy">
+            <input type="hidden" name="name" value="ss">
+            <td> <input disabled type="text" name="cname" value=" ss" /></td>
+            <td> <input type="text" value="shadowsocks/shadowsocks-libev" /> </td>
+        </tr>
+
+        </tr>
+
+        <tr>
+
+            <td rowspan="1">redis</td>
+            <td rowspan="1">1</td>
+            <td rowspan="1">870h54m51s</td>
+
+
+        <tr hx-put="/my/update/resource" hx-include="this">
+            <input type="hidden" name="ns" value="wu">
+            <input type="hidden" name="kind" value="deploy">
+            <input type="hidden" name="name" value="redis">
+            <td> <input disabled type="text" name="cname" value=" redis" /></td>
+            <td> <input type="text" value="redis:7.2.0" /> </td>
+        </tr>
+
+        </tr>
+
+        <tr>
+
+            <td rowspan="1">ikev2vpn</td>
+            <td rowspan="1">2</td>
+            <td rowspan="1">864h43m23s</td>
+
+
+        <tr hx-put="/my/update/resource" hx-include="this">
+            <input type="hidden" name="ns" value="wu">
+            <input type="hidden" name="kind" value="deploy">
+            <input type="hidden" name="name" value="ikev2vpn">
+            <td> <input disabled type="text" name="cname" value=" ikev2vpn" /></td>
+            <td> <input type="text" value="ghcr.io/datewu/tizi:v0.0.3" /> </td>
+        </tr>
+
+        </tr>
+
+        <tr>
+
+            <td rowspan="1">wan</td>
+            <td rowspan="1">1</td>
+            <td rowspan="1">870h54m51s</td>
+
+
+        <tr hx-put="/my/update/resource" hx-include="this">
+            <input type="hidden" name="ns" value="wu">
+            <input type="hidden" name="kind" value="deploy">
+            <input type="hidden" name="name" value="wan">
+            <td> <input disabled type="text" name="cname" value=" wan" /></td>
+            <td> <input type="text" value="ghcr.io/datewu/wan:v3.12.0" /> </td>
+        </tr>
+
+        </tr>
+
+        <tr>
+
+            <td rowspan="1">torrent</td>
+            <td rowspan="1">1</td>
+            <td rowspan="1">870h30m33s</td>
+
+
+        <tr hx-put="/my/update/resource" hx-include="this">
+            <input type="hidden" name="ns" value="wu">
+            <input type="hidden" name="kind" value="deploy">
+            <input type="hidden" name="name" value="torrent">
+            <td> <input disabled type="text" name="cname" value=" torrent" /></td>
+            <td> <input type="text" value="ghcr.io/datewu/zhongzi:v0.9.0" /> </td>
+        </tr>
+
+        </tr>
+
+        <tr>
+
+            <td rowspan="1">set-img</td>
+            <td rowspan="1">1</td>
+            <td rowspan="1">871h49m48s</td>
+
+
+        <tr hx-put="/my/update/resource" hx-include="this">
+            <input type="hidden" name="ns" value="wu">
+            <input type="hidden" name="kind" value="deploy">
+            <input type="hidden" name="name" value="set-img">
+            <td> <input disabled type="text" name="cname" value=" img" /></td>
+            <td> <input type="text" value="ghcr.io/datewu/set-img:v0.9.12" /> </td>
+        </tr>
+
+        </tr>
+
+        </tr>
+    </table>
+
+
+</body>
+
+</html>
