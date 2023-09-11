@@ -67,6 +67,7 @@ func (r *Resource) formatAge(d time.Duration) {
 		}
 	}
 	age += d.String()
+	r.Age = age
 }
 
 func newDeployResource(d *apps.Deployment) *Resource {

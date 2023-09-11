@@ -17,7 +17,7 @@
   <img id="in-spinner" alt="spinner" src="/static/spinner.svg">
   <div class="app">
     {i{ if .User }i}
-    <div hx-target="#content">
+    <div hx-target="#content" hx-push-url="true">
       <a href="/my/profile"> {i{ .User }i} </a>
       <a href="/my/deploys">Deploys</a>
       <a href="/my/sts">Statefulsets</a>
