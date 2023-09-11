@@ -3,7 +3,6 @@ package k8s
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/datewu/gtea/jsonlog"
@@ -86,7 +85,6 @@ func setDeployImg(id *ContainerPath, labels ...string) error {
 	}
 	if labels != nil {
 		ls := d.GetLabels()
-		fmt.Println("getLabes:", ls)
 		if err = checkLabels(ls, labels); err != nil {
 			return err
 		}

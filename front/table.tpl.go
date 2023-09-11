@@ -1,6 +1,7 @@
 package front
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"time"
@@ -45,16 +46,36 @@ type Resource struct {
 	Containers []Container
 	Name       string
 	Replicas   int
-	Age        time.Duration
+	Age        string
+}
+
+func (r *Resource) formatAge(d time.Duration) {
+	age := ""
+	if d.Hours() > 24 {
+		days := d.Hours() / 24
+		if days > 365 {
+			years := days / 365
+			y := int(years)
+			age = fmt.Sprintf("%dy", y)
+			d -= time.Duration(y*365*24) * time.Hour
+			days = d.Hours() / 24
+		}
+		if days > 1 {
+			i := int(days)
+			age = fmt.Sprintf("%dd", i)
+			d -= time.Duration(i*24) * time.Hour
+		}
+	}
+	age += d.String()
 }
 
 func newDeployResource(d *apps.Deployment) *Resource {
 	res := &Resource{
 		Name:     d.Name,
 		Replicas: int(*d.Spec.Replicas),
-		Age: time.Now().Round(time.Second).
-			Sub((d.ObjectMeta.GetCreationTimestamp().Round(time.Second))),
 	}
+	res.formatAge(time.Now().Round(time.Second).
+		Sub((d.ObjectMeta.GetCreationTimestamp().Round(time.Second))))
 	containes := d.Spec.Template.Spec.Containers
 	cs := make([]Container, len(containes))
 	for i, c := range containes {
@@ -70,9 +91,9 @@ func newStsResource(s *apps.StatefulSet) *Resource {
 	res := &Resource{
 		Name:     s.Name,
 		Replicas: int(*s.Spec.Replicas),
-		Age: time.Now().Round(time.Second).
-			Sub((s.ObjectMeta.GetCreationTimestamp().Round(time.Second))),
 	}
+	res.formatAge(time.Now().Round(time.Second).
+		Sub((s.ObjectMeta.GetCreationTimestamp().Round(time.Second))))
 	containes := s.Spec.Template.Spec.Containers
 	cs := make([]Container, len(containes))
 	for i, c := range containes {
