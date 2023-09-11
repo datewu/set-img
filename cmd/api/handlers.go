@@ -348,5 +348,22 @@ func (m *myHandler) sts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *myHandler) updateResouce(w http.ResponseWriter, r *http.Request) {
-	handler.ServerErr(w, errors.New("todo"))
+	err := r.ParseForm()
+	if err != nil {
+		handler.BadRequestErr(w, err)
+		return
+	}
+	c := k8s.ContainerPath{
+		Ns:    r.FormValue("ns"),
+		Kind:  r.FormValue("kind"),
+		Name:  r.FormValue("name"),
+		CName: r.FormValue("cname"),
+		Img:   r.FormValue("image"),
+	}
+	err = c.UpdateResource(fmt.Sprintf("image-user=%s", m.user))
+	if err != nil {
+		handler.ServerErr(w, err)
+		return
+	}
+	handler.OKText(w, "ok")
 }

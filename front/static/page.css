@@ -5,6 +5,17 @@
   text-align: center;
 }
 
+img#in-spinner {
+  display: none;
+  width: 2em;
+  margin: .3em auto;
+}
+
+img#in-spinner.htmx-request {
+  display: block;
+}
+
+
 .logo {
   height: 6em;
   padding: 1.5em;

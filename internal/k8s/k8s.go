@@ -27,6 +27,29 @@ type ContainerPath struct {
 	Img   string `json:"img" binding:"required"`
 }
 
+func (c ContainerPath) valid() bool {
+	if c.CName == "" || c.Img == "" || c.Kind == "" || c.Name == "" || c.Ns == "" {
+		return false
+	}
+	if c.Kind != "deploy" && c.Kind != "sts" {
+		return false
+	}
+	return true
+}
+
+func (c ContainerPath) UpdateResource(labels ...string) error {
+	if !c.valid() {
+		return errors.New("invalid resource param")
+	}
+	switch c.Kind {
+	case "deploy":
+		return setDeployImg(&c, labels...)
+	case "sts":
+		return setStsImg(&c, labels...)
+	}
+	return errors.New("invalid resource kind")
+}
+
 func checkLabels(table map[string]string, labels []string) error {
 	for _, l := range labels {
 		kv := strings.Split(l, "=")

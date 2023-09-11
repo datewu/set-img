@@ -21,7 +21,7 @@
     {{ range $index, $element := .Containers }}
     {{if gt $index 0}}{{break}}{{end}}
     <td>{{ .Name}}</td>
-    <td hx-put="/my/update/resource" hx-trigger="change" hx-include="this">
+    <td hx-put="/my/update/resource" hx-trigger="change" hx-include="this" hx-swap="none">
       <input type="hidden" name="ns" value="{{ $ns }}">
       <input type="hidden" name="kind" value="{{ $kind }}">
       <input type="hidden" name="name" value="{{ $name }}">
@@ -35,7 +35,7 @@
   {{if eq $index 0}}{{continue}}{{end}}
   <tr>
     <td>{{ .Name}}</td>
-    <td hx-put="/my/update/resource" hx-trigger="change" hx-include="this">
+    <td hx-put="/my/update/resource" hx-trigger="change" hx-include="this" hx-swap="none">
       <input type="hidden" name="ns" value="{{ $ns }}">
       <input type="hidden" name="kind" value="{{ $kind }}">
       <input type="hidden" name="name" value="{{ $name }}">
