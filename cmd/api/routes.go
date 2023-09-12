@@ -17,7 +17,7 @@ func New(app *gtea.App) http.Handler {
 		Root:    "front/static",
 	}
 	r.ServeFSWithGzip("/static", fs)
-	r.Get("/", index)
+	r.Get("/", index(app))
 	r.Get("/version", serverVersion(app))
 	loginRoutes(app, r)
 	myRoutes(app, r)

@@ -28,26 +28,33 @@ func serverVersion(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func index(w http.ResponseWriter, r *http.Request) {
-	view := front.IndexView{}
-	token, err := r.Cookie("access_token")
-	if err != nil {
-		if errors.Is(err, http.ErrNoCookie) {
-			jsonlog.Info("no cookie found")
+func index(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		view := front.IndexView{}
+		if a.Env() == gtea.DevEnv {
+			view.User = "datewu"
+			view.Render(w)
+			return
 		}
-		jsonlog.Err(err)
+		token, err := r.Cookie("access_token")
+		if err != nil {
+			if errors.Is(err, http.ErrNoCookie) {
+				jsonlog.Info("no cookie found")
+			}
+			jsonlog.Err(err)
+			view.Render(w)
+			return
+		}
+		//func (ghLoginHandler) userInfo(token string) (*UserInfo, error) {
+		g := ghLoginHandler{}
+		user, err := g.userInfo(token.Value)
+		if err != nil {
+			view.Render(w)
+			return
+		}
+		view.User = user.Login
 		view.Render(w)
-		return
 	}
-	//func (ghLoginHandler) userInfo(token string) (*UserInfo, error) {
-	g := ghLoginHandler{}
-	user, err := g.userInfo(token.Value)
-	if err != nil {
-		view.Render(w)
-		return
-	}
-	view.User = user.Login
-	view.Render(w)
 }
 
 type curlCmd struct {
@@ -288,6 +295,11 @@ type myHandler struct {
 
 func (m *myHandler) middlerware(next http.HandlerFunc) http.HandlerFunc {
 	middle := func(w http.ResponseWriter, r *http.Request) {
+		if m.app.Env() == gtea.DevEnv {
+			m.user = "datewu"
+			next(w, r)
+			return
+		}
 		co, err := r.Cookie("access_token")
 		if err != nil {
 			handler.BadRequestMsg(w, "missing access_token cookie")

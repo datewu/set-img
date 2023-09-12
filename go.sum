@@ -1,6 +1,6 @@
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
-github.com/datewu/gtea v0.5.5 h1:P9GV1w3dO6ImbJJRMuhf0B87DIz72uzqlq29JUGI36A=
-github.com/datewu/gtea v0.5.5/go.mod h1:8Gk1F47xW8SD+NGHoxtNp2HNCTL3agQGxoIX+EzFEhA=
+github.com/datewu/gtea v0.5.6 h1:aqSx+yt5c54oSTfbmN3sATtq6mj9eTaxohzcIWMBWp8=
+github.com/datewu/gtea v0.5.6/go.mod h1:LgZG3jJfcx6+b4FHHQ9rFuCDS303mH0PGtcforWiXbs=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
