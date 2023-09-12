@@ -6,17 +6,22 @@ body {
 
 img#in-spinner {
   display: none;
-  width: 2em;
-  margin: .3em auto;
+  position: fixed;
+  width: 1.8em;
 }
 
 img#in-spinner.htmx-request {
   display: block;
+  top: .5em;
+  left: 48vw;
 }
 
-.logo {
+.nav {
   display: flex;
   align-items: center;
+  justify-content: space-around;
+}
+.logo {
   height: 2.5em;
 }
 

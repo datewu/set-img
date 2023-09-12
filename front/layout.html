@@ -6,9 +6,7 @@
   <link rel="icon" type="image/svg+xml" href="/static/fav.svg" />
   <link rel="stylesheet" href="/static/page.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://unpkg.com/htmx.org@1.9.5"
-    integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
-    crossorigin="anonymous"></script>
+  <script src="/static/htmx.1.9.5.min.js"></script>
   <title>k8s管理工具</title>
 </head>
 
@@ -16,15 +14,16 @@
   <!-- <img id="in-spinner" class="htmx-indicator" alt="spinner" src="/static/spinner.svg"> -->
   <img id="in-spinner" alt="spinner" src="/static/spinner.svg">
   <div class="app">
-    <a href="/" class="logo">
-      <img src="/static/fav.svg" alt="logo" />
-      <p>
-        kubernetes部署工具
-      </p>
-    </a>
-    {{ if .User }}
-    <div hx-target="#content" hx-push-url="true">
-      <a href="/my/profile"> {{ .User }} </a>
+    <div class="nav">
+      <a href="/" class="logo">
+        <img src="/static/fav.svg" alt="logo" />
+      </a>
+      {{ if .User }}
+      <a href="/my/profile" hx-target="#content"> {{ .User }} </a>
+      {{ end }}
+      {{ if .User }}
+    </div>
+    <div hx-target="#content">
       <a href="/my/deploys">Deploys</a>
       <a href="/my/sts">Statefulsets</a>
     </div>
