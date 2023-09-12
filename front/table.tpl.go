@@ -16,6 +16,19 @@ var tableHtml string
 
 var tableTpl = template.Must(template.New("table").Parse(tableHtml))
 
+var tableTplWithLayout *template.Template
+
+func init() {
+	t, err := tableTpl.Clone()
+	if err != nil {
+		panic(err)
+	}
+	tableTplWithLayout, err = t.AddParseTree("full table with layout", layoutTpl.Tree.Copy())
+	if err != nil {
+		panic(err)
+	}
+}
+
 // TableView ...
 type TableView struct {
 	Description string
@@ -120,15 +133,7 @@ func (t TableView) Render(w io.Writer, user string) error {
 			User:      user,
 			TableView: t,
 		}
-		t, err := tableTpl.Clone()
-		if err != nil {
-			return err
-		}
-		t, err = t.AddParseTree("full table with layout", layoutTpl.Tree.Copy())
-		if err != nil {
-			return err
-		}
-		return t.Execute(w, data)
+		return tableTplWithLayout.Execute(w, data)
 	}
 	return tableTpl.ExecuteTemplate(w, "content", t)
 }
