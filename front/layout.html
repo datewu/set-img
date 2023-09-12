@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/static/fav.svg" />
+  <link rel="stylesheet" href="/static/page.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://unpkg.com/htmx.org@1.9.5"
+    integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
+    crossorigin="anonymous"></script>
+  <title>k8s管理工具</title>
+</head>
+
+<body hx-boost="true" hx-indicator="#in-spinner">
+  <!-- <img id="in-spinner" class="htmx-indicator" alt="spinner" src="/static/spinner.svg"> -->
+  <img id="in-spinner" alt="spinner" src="/static/spinner.svg">
+  <div class="app">
+    <a href="/" class="logo">
+      <img src="/static/fav.svg" alt="logo" />
+      <p>
+        kubernetes部署工具
+      </p>
+    </a>
+    {{ if .User }}
+    <div hx-target="#content" hx-push-url="true">
+      <a href="/my/profile"> {{ .User }} </a>
+      <a href="/my/deploys">Deploys</a>
+      <a href="/my/sts">Statefulsets</a>
+    </div>
+    {{ else }}
+    <div id="profile" hx-get="/login/github/init" hx-swap="outerHTML" hx-trigger="load"></div>
+    {{ end }}
+    <div id="content">
+      {{ template "content" .}}
+    </div>
+  </div>
+  <footer>
+    <div hx-get="/version" hx-swap="outerHTML" hx-trigger="revealed">version</div>
+  </footer>
+</body>
+
+</html>

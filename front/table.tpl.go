@@ -15,6 +15,7 @@ import (
 var tableHtml string
 
 var tableTpl = template.Must(template.New("table").Parse(tableHtml))
+var tableTplWithLayout = template.Must(template.New("table").Parse(tableHtml + layoutHtml))
 
 // TableView ...
 type TableView struct {
@@ -47,6 +48,10 @@ type Resource struct {
 	Name       string
 	Replicas   int
 	Age        string
+}
+
+type Container struct {
+	Name, Image string
 }
 
 func (r *Resource) formatAge(d time.Duration) {
@@ -107,10 +112,17 @@ func newStsResource(s *apps.StatefulSet) *Resource {
 	return res
 }
 
-type Container struct {
-	Name, Image string
-}
-
-func (t TableView) Render(w io.Writer) {
-	tableTpl.Execute(w, t)
+func (t TableView) Render(w io.Writer, user string) {
+	if user != "" {
+		data := struct {
+			User string
+			TableView
+		}{
+			User:      user,
+			TableView: t,
+		}
+		tableTplWithLayout.Execute(w, data)
+		return
+	}
+	tableTpl.ExecuteTemplate(w, "content", t)
 }

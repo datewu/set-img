@@ -321,8 +321,16 @@ func (m *myHandler) middlerware(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (m *myHandler) profile(w http.ResponseWriter, r *http.Request) {
-	htmx := fmt.Sprintf(`<span> hello %s</span>`, m.user)
-	handler.OKText(w, htmx)
+	if r.Header.Get("HX-Request") != "" {
+		htmx := fmt.Sprintf(`<span> hello %s</span>`, m.user)
+		handler.OKText(w, htmx)
+		return
+	}
+	u := struct {
+		User string
+	}{m.user}
+	front.ProfileTpl.Execute(w, u)
+
 }
 
 func (m *myHandler) deploys(w http.ResponseWriter, r *http.Request) {
@@ -339,7 +347,11 @@ func (m *myHandler) deploys(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	view.AddDeploys(ds)
-	view.Render(w)
+	if r.Header.Get("HX-Request") == "" {
+		view.Render(w, m.user)
+		return
+	}
+	view.Render(w, "")
 }
 
 func (m *myHandler) sts(w http.ResponseWriter, r *http.Request) {
@@ -356,7 +368,11 @@ func (m *myHandler) sts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	view.AddSts(ss)
-	view.Render(w)
+	if r.Header.Get("HX-Request") == "" {
+		view.Render(w, m.user)
+		return
+	}
+	view.Render(w, "")
 }
 
 func (m *myHandler) updateResouce(w http.ResponseWriter, r *http.Request) {

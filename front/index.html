@@ -1,0 +1,44 @@
+{{ define "content" }}
+<div id="content">
+  <div class="url-btns">
+    <p id="url">https://set-img.deoops.com/api/v1/auth/setimg</p>
+    <div>
+      <button hx-on="click: copyPastboard(this)">copy</button>
+      <button hx-on="click: toogle(this)">more</button>
+    </div>
+  </div>
+  <div id="detail">
+    <pre>
+curl -XPOST https://set-img.deoops.com/api/v1/auth/setimg \
+-H 'Authorization: $TOKEN'                                \
+--data-binary                                             \ 
+'{"container_name":"CHANGE-ME", "kind":"CHANGE-deploy/sts",
+"img":"${ { steps.prep.outputs.tags } }",
+"name":"CHANGE-ME","namespace":"CHANGE-ME"}'
+    </pre>
+  </div>
+</div>
+
+<script>
+  function copyPastboard(t) {
+    // Get the text field
+    var copyText = document.getElementById("url");
+    // Copy the text inside the text field
+    navigator.clipboard.writeText(copyText.innerText);
+    t.innerText = 'copied!'
+    t.blur()
+  }
+
+  function toogle(t) {
+    var detail = document.getElementById("detail");
+    if (t.innerText === "less") {
+      t.innerText = "more";
+      detail.style.display = "none";
+    } else {
+      detail.style.display = "block";
+      t.innerText = "less";
+    }
+    t.blur();
+  }
+</script>
+{{ end }}

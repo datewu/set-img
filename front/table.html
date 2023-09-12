@@ -1,3 +1,4 @@
+{{ define "content" }}
 <table>
   <tr>
     <th colspan="5">{{ or .Description "deployments" }}</th>
@@ -54,3 +55,5 @@
     {{ end}}
   </tr>
 </table>
+
+{{ end }}

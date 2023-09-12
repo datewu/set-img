@@ -7,11 +7,10 @@ import (
 	_ "embed"
 )
 
-//go:embed index-layout.html
+//go:embed index.html
 var indexHtml string
 
-var indexTpl = template.Must(template.New("index").
-	Delims("{i{", "}i}").Parse(indexHtml))
+var indexTpl = template.Must(template.New("index").Parse(indexHtml + layoutHtml))
 
 // IndexView ...
 type IndexView struct {
