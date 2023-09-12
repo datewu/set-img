@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"log"
 	"time"
 
 	apps "k8s.io/api/apps/v1"
@@ -15,7 +16,6 @@ import (
 var tableHtml string
 
 var tableTpl = template.Must(template.New("table").Parse(tableHtml))
-var tableTplWithLayout = template.Must(template.New("table").Parse(tableHtml + layoutHtml))
 
 // TableView ...
 type TableView struct {
@@ -121,7 +121,17 @@ func (t TableView) Render(w io.Writer, user string) {
 			User:      user,
 			TableView: t,
 		}
-		tableTplWithLayout.Execute(w, data)
+		// tableTplWithLayout.Execute(w, data)
+		t, err := tableTpl.Clone()
+		if err != nil {
+			log.Fatalln("clone failed:", err)
+		}
+		a, err := t.AddParseTree("l", layoutTpl.Tree.Copy())
+		if err != nil {
+			log.Fatalln("add parse tree failed:", err)
+		}
+		a.Execute(w, data)
+		// t.ExecuteTemplate(os.Stdout, "l",data)
 		return
 	}
 	tableTpl.ExecuteTemplate(w, "content", t)
