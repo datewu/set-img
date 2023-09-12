@@ -14,6 +14,8 @@ import (
 	"github.com/datewu/set-img/internal/k8s"
 )
 
+const ghCookieName = "gh_access_token"
+
 func serverVersion(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 	version := a.GetMetaData("version")
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -138,7 +140,7 @@ func (g ghLoginHandler) callback(w http.ResponseWriter, r *http.Request) {
 		handler.ServerErr(w, err)
 		return
 	}
-	handler.SetSimpleCookie(w, r, "access_token", token.AccessToken)
+	handler.SetSimpleCookie(w, r, ghCookieName, token.AccessToken)
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 
@@ -155,16 +157,16 @@ func (m *myHandler) middlerware(next http.HandlerFunc) http.HandlerFunc {
 			next(w, r)
 			return
 		}
-		co, err := r.Cookie("access_token")
+		co, err := r.Cookie(ghCookieName)
 		if err != nil {
-			handler.BadRequestMsg(w, "missing access_token cookie")
+			handler.BadRequestMsg(w, "missing github access_token cookie")
 			return
 		}
 		t := co.Value
 		gh := ghLoginHandler{}
 		user, err := gh.userInfo(t)
 		if err != nil {
-			handler.ClearSimpleCookie(w, "access_token")
+			handler.ClearSimpleCookie(w, ghCookieName)
 			handler.ServerErr(w, err)
 			return
 		}
@@ -181,11 +183,10 @@ func (m *myHandler) profile(w http.ResponseWriter, r *http.Request) {
 		handler.OKText(w, htmx)
 		return
 	}
-	u := struct {
-		User string
-	}{m.user}
-	front.ProfileTpl.Execute(w, u)
-
+	view := front.ProfileView{User: m.user}
+	if err := view.Render(w); err != nil {
+		handler.ServerErr(w, err)
+	}
 }
 
 func (m *myHandler) deploys(w http.ResponseWriter, r *http.Request) {
@@ -203,10 +204,14 @@ func (m *myHandler) deploys(w http.ResponseWriter, r *http.Request) {
 	}
 	view.AddDeploys(ds)
 	if r.Header.Get("HX-Request") == "" {
-		view.Render(w, m.user)
+		if err := view.Render(w, m.user); err != nil {
+			handler.ServerErr(w, err)
+		}
 		return
 	}
-	view.Render(w, "")
+	if err := view.Render(w, ""); err != nil {
+		handler.ServerErr(w, err)
+	}
 }
 
 func (m *myHandler) sts(w http.ResponseWriter, r *http.Request) {
@@ -224,10 +229,14 @@ func (m *myHandler) sts(w http.ResponseWriter, r *http.Request) {
 	}
 	view.AddSts(ss)
 	if r.Header.Get("HX-Request") == "" {
-		view.Render(w, m.user)
+		if err := view.Render(w, m.user); err != nil {
+			handler.ServerErr(w, err)
+		}
 		return
 	}
-	view.Render(w, "")
+	if err := view.Render(w, ""); err != nil {
+		handler.ServerErr(w, err)
+	}
 }
 
 func (m *myHandler) updateResouce(w http.ResponseWriter, r *http.Request) {

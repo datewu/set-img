@@ -17,27 +17,37 @@ func index(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 		view := front.IndexView{}
 		if a.Env() == gtea.DevEnv {
 			view.User = "datewu"
-			view.Render(w)
+			if err := view.Render(w); err != nil {
+				handler.ServerErr(w, err)
+			}
 			return
 		}
-		token, err := r.Cookie("access_token")
+		token, err := r.Cookie(ghCookieName)
 		if err != nil {
 			if errors.Is(err, http.ErrNoCookie) {
 				jsonlog.Info("no cookie found")
+			} else {
+				jsonlog.Err(err)
 			}
-			jsonlog.Err(err)
-			view.Render(w)
+			if err := view.Render(w); err != nil {
+				handler.ServerErr(w, err)
+			}
 			return
 		}
 		//func (ghLoginHandler) userInfo(token string) (*UserInfo, error) {
 		g := ghLoginHandler{}
 		user, err := g.userInfo(token.Value)
 		if err != nil {
-			view.Render(w)
+			handler.ClearSimpleCookie(w, ghCookieName)
+			if err := view.Render(w); err != nil {
+				handler.ServerErr(w, err)
+			}
 			return
 		}
 		view.User = user.Login
-		view.Render(w)
+		if err := view.Render(w); err != nil {
+			handler.ServerErr(w, err)
+		}
 	}
 }
 

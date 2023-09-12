@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"log"
 	"time"
 
 	apps "k8s.io/api/apps/v1"
@@ -112,7 +111,7 @@ func newStsResource(s *apps.StatefulSet) *Resource {
 	return res
 }
 
-func (t TableView) Render(w io.Writer, user string) {
+func (t TableView) Render(w io.Writer, user string) error {
 	if user != "" {
 		data := struct {
 			User string
@@ -121,18 +120,15 @@ func (t TableView) Render(w io.Writer, user string) {
 			User:      user,
 			TableView: t,
 		}
-		// tableTplWithLayout.Execute(w, data)
 		t, err := tableTpl.Clone()
 		if err != nil {
-			log.Fatalln("clone failed:", err)
+			return err
 		}
-		a, err := t.AddParseTree("l", layoutTpl.Tree.Copy())
+		t, err = t.AddParseTree("full table with layout", layoutTpl.Tree.Copy())
 		if err != nil {
-			log.Fatalln("add parse tree failed:", err)
+			return err
 		}
-		a.Execute(w, data)
-		// t.ExecuteTemplate(os.Stdout, "l",data)
-		return
+		return t.Execute(w, data)
 	}
-	tableTpl.ExecuteTemplate(w, "content", t)
+	return tableTpl.ExecuteTemplate(w, "content", t)
 }
