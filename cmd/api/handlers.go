@@ -76,9 +76,8 @@ func showPath(w http.ResponseWriter, r *http.Request) {
 }
 
 type k8sHandler struct {
-	app   *gtea.App
-	user  string
-	token string
+	app  *gtea.App
+	user string
 }
 
 func (k k8sHandler) listBio(w http.ResponseWriter, r *http.Request) {

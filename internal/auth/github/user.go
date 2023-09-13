@@ -3,14 +3,9 @@ package github
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
-
-	"github.com/datewu/gtea/jsonlog"
 )
 
 const (
@@ -111,26 +106,4 @@ func GetUser(token string) (*UserInfo, error) {
 		return nil, err
 	}
 	return &info, nil
-}
-
-// DebugGetUser ...
-func DebugGetUser(token string) {
-	url := fmt.Sprintf("%s/user", APIURL)
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		jsonlog.Err(err)
-		return
-	}
-	req.Header.Set("Accept", "application/vnd.github+json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		jsonlog.Err(err)
-		return
-	}
-	defer resp.Body.Close()
-	log.Println("debug user response:")
-	io.Copy(os.Stderr, resp.Body)
-	log.Println("debug user response end")
 }
