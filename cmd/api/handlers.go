@@ -9,6 +9,7 @@ import (
 	"github.com/datewu/gtea/handler"
 	"github.com/datewu/gtea/jsonlog"
 	"github.com/datewu/set-img/front"
+	"github.com/datewu/set-img/internal/auth/github"
 	"github.com/datewu/set-img/internal/k8s"
 )
 
@@ -22,7 +23,7 @@ func index(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
-		token, err := r.Cookie(ghCookieName)
+		token, err := r.Cookie(github.CookieName)
 		if err != nil {
 			if errors.Is(err, http.ErrNoCookie) {
 				jsonlog.Info("no cookie found")
@@ -34,11 +35,9 @@ func index(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 			}
 			return
 		}
-		//func (ghLoginHandler) userInfo(token string) (*UserInfo, error) {
-		g := ghLoginHandler{}
-		user, err := g.userInfo(token.Value)
+		user, err := github.GetUser(token.Value)
 		if err != nil {
-			handler.ClearSimpleCookie(w, ghCookieName)
+			handler.ClearSimpleCookie(w, github.CookieName)
 			if err := view.Render(w); err != nil {
 				handler.ServerErr(w, err)
 			}

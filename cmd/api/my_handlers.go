@@ -1,22 +1,15 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
-	"time"
 
 	"github.com/datewu/gtea"
 	"github.com/datewu/gtea/handler"
 	"github.com/datewu/set-img/front"
+	"github.com/datewu/set-img/internal/auth/github"
 	"github.com/datewu/set-img/internal/k8s"
-)
-
-const (
-	ghCookieName = "gh_access_token"
-	ghURL        = "https://github.com"
 )
 
 func serverVersion(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
@@ -35,99 +28,9 @@ type ghLoginHandler struct {
 	app *gtea.App
 }
 
-// UserInfo is the github user info
-type UserInfo struct {
-	Login             string    `json:"login"`
-	ID                int       `json:"id"`
-	NodeID            string    `json:"node_id"`
-	AvatarURL         string    `json:"avatar_url"`
-	GravatarID        string    `json:"gravatar_id"`
-	URL               string    `json:"url"`
-	HTMLURL           string    `json:"html_url"`
-	FollowersURL      string    `json:"followers_url"`
-	FollowingURL      string    `json:"following_url"`
-	GistsURL          string    `json:"gists_url"`
-	StarredURL        string    `json:"starred_url"`
-	SubscriptionsURL  string    `json:"subscriptions_url"`
-	OrganizationsURL  string    `json:"organizations_url"`
-	ReposURL          string    `json:"repos_url"`
-	EventsURL         string    `json:"events_url"`
-	ReceivedEventsURL string    `json:"received_events_url"`
-	Type              string    `json:"type"`
-	SiteAdmin         bool      `json:"site_admin"`
-	Name              string    `json:"name"`
-	Company           string    `json:"company"`
-	Blog              string    `json:"blog"`
-	Location          string    `json:"location"`
-	Email             string    `json:"email"`
-	Hireable          bool      `json:"hireable"`
-	Bio               string    `json:"bio"`
-	TwitterUsername   string    `json:"twitter_username"`
-	PublicRepos       int       `json:"public_repos"`
-	PublicGists       int       `json:"public_gists"`
-	Followers         int       `json:"followers"`
-	Following         int       `json:"following"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
-}
-
-// GhToken is the github token
-type GhToken struct {
-	AccessToken string `json:"access_token"`
-	Scope       string `json:"scope"`
-	TokenType   string `json:"token_type"`
-}
-
-func (ghLoginHandler) getToken(code string) (*GhToken, error) {
-	data := fmt.Sprintf(`{"client_id":"%s","client_secret":"%s","code":"%s"}`,
-		os.Getenv("GITHUB-APP-CID"), os.Getenv("GITHUB-APP-SECRET"), code)
-	reader := strings.NewReader(data)
-	url := fmt.Sprintf("%s/login/oauth/access_token", ghURL)
-	req, err := http.NewRequest("POST", url, reader)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-	// req.Header.Set("X-GitHub-OTP", "")
-	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	var token GhToken
-	err = json.NewDecoder(resp.Body).Decode(&token)
-	if err != nil {
-		return nil, err
-	}
-	return &token, nil
-}
-
-func (ghLoginHandler) userInfo(token string) (*UserInfo, error) {
-	req, err := http.NewRequest("GET", "https://api.github.com/user", nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Accept", "application/vnd.github+json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	var info UserInfo
-	err = json.NewDecoder(resp.Body).Decode(&info)
-	if err != nil {
-		return nil, err
-	}
-	return &info, nil
-}
-
 func (ghLoginHandler) init(w http.ResponseWriter, r *http.Request) {
 	htmx := fmt.Sprintf(`<a hx-boost="false" href="%s/login/oauth/authorize?client_id=%s">Login</a>`,
-		ghURL, os.Getenv("GITHUB-APP-CID"))
+		github.URL, os.Getenv("GITHUB-APP-CID"))
 	handler.OKText(w, htmx)
 }
 
@@ -137,13 +40,14 @@ func (g ghLoginHandler) callback(w http.ResponseWriter, r *http.Request) {
 		handler.BadRequestErr(w, fmt.Errorf("code is empty"))
 		return
 	}
-	token, err := g.getToken(code)
+	token, err := github.GetToken(os.Getenv("GITHUB-APP-CID"),
+		os.Getenv("GITHUB-APP-SECRET"), code)
 	if err != nil {
 		// handler.BadRequestErr(w, err)
 		handler.ServerErr(w, err)
 		return
 	}
-	handler.SetSimpleCookie(w, r, ghCookieName, token.AccessToken)
+	handler.SetSimpleCookie(w, r, github.CookieName, token.AccessToken)
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 
@@ -160,16 +64,15 @@ func (m *myHandler) middlerware(next http.HandlerFunc) http.HandlerFunc {
 			next(w, r)
 			return
 		}
-		co, err := r.Cookie(ghCookieName)
+		co, err := r.Cookie(github.CookieName)
 		if err != nil {
 			handler.BadRequestMsg(w, "missing github access_token cookie")
 			return
 		}
 		t := co.Value
-		gh := ghLoginHandler{}
-		user, err := gh.userInfo(t)
+		user, err := github.GetUser(t)
 		if err != nil {
-			handler.ClearSimpleCookie(w, ghCookieName)
+			handler.ClearSimpleCookie(w, github.CookieName)
 			handler.ServerErr(w, err)
 			return
 		}
