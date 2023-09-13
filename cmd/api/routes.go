@@ -5,6 +5,7 @@ import (
 
 	"github.com/datewu/gtea"
 	"github.com/datewu/gtea/handler"
+	"github.com/datewu/gtea/handler/sse"
 	"github.com/datewu/gtea/handler/static"
 	"github.com/datewu/gtea/router"
 )
@@ -18,6 +19,7 @@ func New(app *gtea.App) http.Handler {
 	}
 	r.ServeFSWithGzip("/static", fs)
 	r.Get("/", index(app))
+	r.Get("/debug/reload", sse.NewHandler(reloadSSE{app: app}))
 	r.Get("/version", serverVersion(app))
 	loginRoutes(app, r)
 	myRoutes(app, r)

@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/static/page.css" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="/static/htmx.1.9.5.min.js"></script>
+  <!-- <script src="/static/htmx.1.9.5.sse.js"></script> -->
   <title>k8s管理工具</title>
 </head>
 
@@ -33,6 +34,16 @@
       {{ template "content" .}}
     </div>
   </div>
+  <script>
+    const evtSource = new EventSource("/debug/reload", {
+      withCredentials: true,
+    });
+    evtSource.onmessage = (event) => {
+      console.log("event:", event)
+      console.log("data:", event.data)
+      eval(eval(event.data))
+    };
+  </script>
   <footer>
     <div hx-get="/version" hx-swap="outerHTML" hx-trigger="revealed">version</div>
   </footer>
