@@ -58,13 +58,14 @@ type myHandler struct {
 }
 
 func (m *myHandler) profile(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("HX-Request") != "" {
-		htmx := fmt.Sprintf(`<span> hello %s</span>`, m.user)
-		handler.OKText(w, htmx)
+	view := front.ProfileView{User: m.user}
+	if r.Header.Get("HX-Request") == "" {
+		if err := view.Render(w, m.user); err != nil {
+			handler.ServerErr(w, err)
+		}
 		return
 	}
-	view := front.ProfileView{User: m.user}
-	if err := view.Render(w); err != nil {
+	if err := view.Render(w, ""); err != nil {
 		handler.ServerErr(w, err)
 	}
 }

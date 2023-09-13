@@ -30,6 +30,17 @@ type ProfileView struct {
 	User string
 }
 
-func (p ProfileView) Render(w io.Writer) error {
-	return profileTplWithLayout.Execute(w, p)
+func (p ProfileView) Render(w io.Writer, user string) error {
+	if user != "" {
+		data := struct {
+			User string
+			ProfileView
+		}{
+			User:        user,
+			ProfileView: p,
+		}
+		return profileTplWithLayout.Execute(w, data)
+
+	}
+	return profileTpl.Execute(w, p)
 }
