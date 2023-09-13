@@ -42,5 +42,5 @@ func (p ProfileView) Render(w io.Writer, user string) error {
 		return profileTplWithLayout.Execute(w, data)
 
 	}
-	return profileTpl.Execute(w, p)
+	return profileTpl.ExecuteTemplate(w, "content", p)
 }
