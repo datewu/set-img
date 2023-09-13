@@ -14,7 +14,10 @@ import (
 	"github.com/datewu/set-img/internal/k8s"
 )
 
-const ghCookieName = "gh_access_token"
+const (
+	ghCookieName = "gh_access_token"
+	ghURL        = "https://github.com"
+)
 
 func serverVersion(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 	version := a.GetMetaData("version")
@@ -79,7 +82,8 @@ func (ghLoginHandler) getToken(code string) (*GhToken, error) {
 	data := fmt.Sprintf(`{"client_id":"%s","client_secret":"%s","code":"%s"}`,
 		os.Getenv("GITHUB-APP-CID"), os.Getenv("GITHUB-APP-SECRET"), code)
 	reader := strings.NewReader(data)
-	req, err := http.NewRequest("POST", "https://github.com/login/oauth/access_token", reader)
+	url := fmt.Sprintf("%s/login/oauth/access_token", ghURL)
+	req, err := http.NewRequest("POST", url, reader)
 	if err != nil {
 		return nil, err
 	}
@@ -122,9 +126,8 @@ func (ghLoginHandler) userInfo(token string) (*UserInfo, error) {
 }
 
 func (ghLoginHandler) init(w http.ResponseWriter, r *http.Request) {
-	htmx := fmt.Sprintf(`
-	<a hx-boost="false" href="https://github.com/login/oauth/authorize?client_id=%s">Login with GitHub</a>
-	`, os.Getenv("GITHUB-APP-CID"))
+	htmx := fmt.Sprintf(`<a hx-boost="false" href="%s/login/oauth/authorize?client_id=%s">Login</a>`,
+		ghURL, os.Getenv("GITHUB-APP-CID"))
 	handler.OKText(w, htmx)
 }
 
