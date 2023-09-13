@@ -1,4 +1,4 @@
 {{- define "content"}}
 <span>welcome {{ .User }}</span>
-<button hx-delete="/my/logout" hx-swap="none">logout</button>
+<button hx-boost="false" hx-delete="/my/logout" hx-swap="none">logout</button>
 {{ end -}}

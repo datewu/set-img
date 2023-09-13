@@ -2,7 +2,9 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/datewu/gtea"
 	"github.com/datewu/gtea/handler"
@@ -22,11 +24,14 @@ func (k *k8sHandler) auth(next http.HandlerFunc) http.HandlerFunc {
 			handler.BadRequestMsg(w, "missing github token query/header/cookie")
 			return
 		}
+		github.DebugGetUser(token)
+		time.Sleep(time.Second)
 		user, err := github.GetUser(token)
 		if err != nil {
 			handler.ServerErr(w, err)
 			return
 		}
+		fmt.Println("user xxxx:", user)
 		k.user = user.Login
 		k.token = token
 		ok, err := auth.Valid(context.Background(), auth.GithubAuth, user.Login, token)
