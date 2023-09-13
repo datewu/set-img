@@ -71,7 +71,9 @@ func (m *myHandler) profile(w http.ResponseWriter, r *http.Request) {
 
 func (m *myHandler) logout(w http.ResponseWriter, r *http.Request) {
 	handler.ClearSimpleCookie(w, github.CookieName)
-	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	// http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	w.Header().Add("HX-Redirect", "/")
+	handler.OKText(w, "logout")
 }
 
 func (m *myHandler) deploys(w http.ResponseWriter, r *http.Request) {
