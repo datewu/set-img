@@ -57,32 +57,6 @@ type myHandler struct {
 	token string
 }
 
-func (m *myHandler) middlerware(next http.HandlerFunc) http.HandlerFunc {
-	middle := func(w http.ResponseWriter, r *http.Request) {
-		if m.app.Env() == gtea.DevEnv {
-			m.user = "datewu"
-			next(w, r)
-			return
-		}
-		co, err := r.Cookie(github.CookieName)
-		if err != nil {
-			handler.BadRequestMsg(w, "missing github access_token cookie")
-			return
-		}
-		t := co.Value
-		user, err := github.GetUser(t)
-		if err != nil {
-			handler.ClearSimpleCookie(w, github.CookieName)
-			handler.ServerErr(w, err)
-			return
-		}
-		m.user = user.Login
-		m.token = t
-		next(w, r)
-	}
-	return middle
-}
-
 func (m *myHandler) profile(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("HX-Request") != "" {
 		htmx := fmt.Sprintf(`<span> hello %s</span>`, m.user)

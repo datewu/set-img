@@ -8,11 +8,10 @@ import (
 
 const (
 	ghcrRegistry = "https://ghcr.io/v2/"
-	username     = "datewu"
 )
 
 // Valid ...
-func Valide(ctx context.Context, token string) (bool, error) {
+func Valide(ctx context.Context, username, token string) (bool, error) {
 	dockerCli := newMicroDockerClient(username, token)
 	jsonlog.Info("check token", map[string]any{"token": token, "username": username})
 	ok, err := dockerCli.CheckToken(ctx, username, token)

@@ -36,7 +36,7 @@ func loginRoutes(app *gtea.App, r *router.RoutesGroup) {
 
 func myRoutes(app *gtea.App, r *router.RoutesGroup) {
 	h := &myHandler{app: app}
-	my := r.Group("/my", h.middlerware)
+	my := r.Group("/my", h.auth)
 	my.Use(handler.GzipMiddleware)
 	my.Get("/profile", h.profile)
 	my.Get("/deploys", h.deploys)
@@ -46,13 +46,11 @@ func myRoutes(app *gtea.App, r *router.RoutesGroup) {
 }
 
 func addBusinessRoutes(app *gtea.App, r *router.RoutesGroup) {
-	th := &tokenHandler{app: app}
 	kh := &k8sHandler{app: app}
 	g := r.Group("/api/v1")
 	g.Get("/", showPath)
-	a := g.Group("/auth", handler.TokenMiddleware(checkAuth))
+	a := g.Group("/auth", kh.auth)
 
-	a.Get("/ping", th.authPing)
 	a.Get("/list/:ns/:kind", kh.listBio)
 	a.Get("/get/:ns/:kind/:name", kh.getBio)
 	a.Post("/setimg", kh.setImg)

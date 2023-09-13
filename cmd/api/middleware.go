@@ -2,24 +2,68 @@ package api
 
 import (
 	"context"
-	"time"
+	"net/http"
 
-	"github.com/datewu/gtea/jsonlog"
+	"github.com/datewu/gtea"
+	"github.com/datewu/gtea/handler"
 	"github.com/datewu/set-img/internal/auth"
-	"github.com/datewu/set-img/internal/author"
+	"github.com/datewu/set-img/internal/auth/github"
 )
 
-func checkAuth(token string) (bool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	ok, err := auth.Valid(ctx, auth.GithubAuth, token)
-	if err != nil {
-		jsonlog.Err(err)
-		return false, err
+func (k *k8sHandler) auth(next http.HandlerFunc) http.HandlerFunc {
+	middle := func(w http.ResponseWriter, r *http.Request) {
+		if k.app.Env() == gtea.DevEnv {
+			k.user = "datewu"
+			next(w, r)
+			return
+		}
+		token, err := handler.GetToken(r, "token")
+		if err != nil {
+			handler.BadRequestMsg(w, "missing github token query/header/cookie")
+			return
+		}
+		user, err := github.GetUser(token)
+		if err != nil {
+			handler.ServerErr(w, err)
+			return
+		}
+		k.user = user.Login
+		k.token = token
+		ok, err := auth.Valid(context.Background(), auth.GithubAuth, user.Login, token)
+		if err != nil {
+			handler.ServerErr(w, err)
+			return
+		}
+		if !ok {
+			handler.InvalidAuthenticationToken(w)
+			return
+		}
+		next(w, r)
 	}
-	if !ok {
-		jsonlog.Err(nil, map[string]any{"token": token})
-		return false, nil
+	return middle
+}
+func (m *myHandler) auth(next http.HandlerFunc) http.HandlerFunc {
+	middle := func(w http.ResponseWriter, r *http.Request) {
+		if m.app.Env() == gtea.DevEnv {
+			m.user = "datewu"
+			next(w, r)
+			return
+		}
+		co, err := r.Cookie(github.CookieName)
+		if err != nil {
+			handler.BadRequestMsg(w, "missing github access_token cookie")
+			return
+		}
+		t := co.Value
+		user, err := github.GetUser(t)
+		if err != nil {
+			handler.ClearSimpleCookie(w, github.CookieName)
+			handler.ServerErr(w, err)
+			return
+		}
+		m.user = user.Login
+		m.token = t
+		next(w, r)
 	}
-	return author.Can(token)
+	return middle
 }

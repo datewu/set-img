@@ -75,17 +75,10 @@ func showPath(w http.ResponseWriter, r *http.Request) {
 	handler.OKJSON(w, curl)
 }
 
-type tokenHandler struct {
-	app *gtea.App
-}
-
-func (t tokenHandler) authPing(w http.ResponseWriter, r *http.Request) {
-	msg := "ping from auth, you've been  authenticated"
-	handler.WriteStr(w, http.StatusOK, msg, nil)
-}
-
 type k8sHandler struct {
-	app *gtea.App
+	app   *gtea.App
+	user  string
+	token string
 }
 
 func (k k8sHandler) listBio(w http.ResponseWriter, r *http.Request) {
