@@ -7,11 +7,8 @@ import (
 	_ "embed"
 )
 
-var profileHtml = `
-{{- define "content"  }}
-  <span>welcome {{ .User }}</span>
-{{ end -}}
-`
+//go:embed profile.html
+var profileHtml string
 
 // profileTpl is the profile template.
 var profileTpl = template.Must(template.New("profile").Parse(profileHtml))

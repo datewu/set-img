@@ -69,6 +69,11 @@ func (m *myHandler) profile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (m *myHandler) logout(w http.ResponseWriter, r *http.Request) {
+	handler.ClearSimpleCookie(w, github.CookieName)
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+}
+
 func (m *myHandler) deploys(w http.ResponseWriter, r *http.Request) {
 	ns := handler.ReadQuery(r, "ns", "wu")
 	view := &front.TableView{

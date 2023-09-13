@@ -38,6 +38,7 @@ func myRoutes(app *gtea.App, r *router.RoutesGroup) {
 	h := &myHandler{app: app}
 	my := r.Group("/my", h.auth)
 	my.Use(handler.GzipMiddleware)
+	my.Delete("/logout", h.logout)
 	my.Get("/profile", h.profile)
 	my.Get("/deploys", h.deploys)
 	my.Get("/sts", h.sts)
