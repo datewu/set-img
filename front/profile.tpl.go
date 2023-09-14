@@ -31,16 +31,16 @@ type ProfileView struct {
 }
 
 func (p ProfileView) Render(w io.Writer, user string) error {
-	if user != "" {
-		data := struct {
-			User string
-			ProfileView
-		}{
-			User:        user,
-			ProfileView: p,
-		}
-		return profileTplWithLayout.Execute(w, data)
-
-	}
 	return profileTpl.ExecuteTemplate(w, "content", p)
+}
+
+// FullPage embed profile with layout template
+func (p ProfileView) FullPage(user, env string) LayoutView {
+	l := LayoutView{
+		User:       user,
+		Env:        env,
+		ContentTpl: profileTplWithLayout,
+		Content:    p,
+	}
+	return l
 }

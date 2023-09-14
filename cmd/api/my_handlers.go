@@ -92,12 +92,13 @@ func (m *myHandler) deploys(w http.ResponseWriter, r *http.Request) {
 	}
 	view.AddDeploys(ds)
 	if r.Header.Get("HX-Request") == "" {
-		if err := view.Render(w, m.user); err != nil {
+		page := view.FullPage(m.user, m.app.Env())
+		if err := page.Render(w); err != nil {
 			handler.ServerErr(w, err)
 		}
 		return
 	}
-	if err := view.Render(w, ""); err != nil {
+	if err := view.Render(w); err != nil {
 		handler.ServerErr(w, err)
 	}
 }
@@ -117,12 +118,13 @@ func (m *myHandler) sts(w http.ResponseWriter, r *http.Request) {
 	}
 	view.AddSts(ss)
 	if r.Header.Get("HX-Request") == "" {
-		if err := view.Render(w, m.user); err != nil {
+		page := view.FullPage(m.user, m.app.Env())
+		if err := page.Render(w); err != nil {
 			handler.ServerErr(w, err)
 		}
 		return
 	}
-	if err := view.Render(w, ""); err != nil {
+	if err := view.Render(w); err != nil {
 		handler.ServerErr(w, err)
 	}
 }

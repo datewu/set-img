@@ -26,9 +26,20 @@ func init() {
 
 // IndexView ...
 type IndexView struct {
-	User string
 }
 
+// Render ...
 func (i IndexView) Render(w io.Writer) error {
-	return indexTplWithLayout.Execute(w, i)
+	return indexTpl.ExecuteTemplate(w, "content", i)
+}
+
+// FullPage embed index in layout template
+func (i IndexView) FullPage(user, env string) LayoutView {
+	l := LayoutView{
+		User:       user,
+		Env:        env,
+		ContentTpl: indexTplWithLayout,
+		Content:    i,
+	}
+	return l
 }

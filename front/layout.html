@@ -31,9 +31,10 @@
     </div>
     {{ end }}
     <div id="content">
-      {{ template "content" .}}
+      {{ template "content" .Content }}
     </div>
   </div>
+  {{ if eq .Env "development"}}
   <script>
     const evtSource = new EventSource("/debug/reload", {
       withCredentials: true,
@@ -44,6 +45,7 @@
       eval(eval(event.data))
     };
   </script>
+  {{ end }}
   <footer>
     <div hx-get="/version" hx-swap="outerHTML" hx-trigger="revealed">version</div>
   </footer>

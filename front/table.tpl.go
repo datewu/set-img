@@ -124,16 +124,17 @@ func newStsResource(s *apps.StatefulSet) *Resource {
 	return res
 }
 
-func (t TableView) Render(w io.Writer, user string) error {
-	if user != "" {
-		data := struct {
-			User string
-			TableView
-		}{
-			User:      user,
-			TableView: t,
-		}
-		return tableTplWithLayout.Execute(w, data)
-	}
+func (t TableView) Render(w io.Writer) error {
 	return tableTpl.ExecuteTemplate(w, "content", t)
+}
+
+// FullPage embed table with layout template
+func (t TableView) FullPage(user, env string) LayoutView {
+	l := LayoutView{
+		User:       user,
+		Env:        env,
+		ContentTpl: profileTplWithLayout,
+		Content:    t,
+	}
+	return l
 }
