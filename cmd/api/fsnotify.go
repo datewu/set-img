@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
@@ -39,11 +40,12 @@ func newReloadSSE(app *gtea.App, dirs ...string) *reloadSSE {
 	}
 }
 
-// Pour
-func (r *reloadSSE) Pour(w http.ResponseWriter, f http.Flusher) {
+// Send
+func (r *reloadSSE) Send(ctx context.Context, w http.ResponseWriter, f http.Flusher) {
 	if r == nil {
 		return
 	}
+	done := ctx.Done()
 	if r.app.Env() != gtea.DevEnv {
 		e := sse.NewEvent("reload", "not in development mode. bye!")
 		if err := e.Send(w, f); err != nil {
@@ -58,9 +60,12 @@ func (r *reloadSSE) Pour(w http.ResponseWriter, f http.Flusher) {
 	defer tick.Stop()
 
 	heartbeat := sse.NewEvent("heatbeat", "ping")
-	reload := sse.NewMessage("location.reload()")
+	reload := sse.NewMessage("setTimeout(() => location.reload(), 3000)")
 	for {
 		select {
+		case <-done:
+			r.app.Logger.Info("sse client disconnected")
+			return
 		case <-tick.C:
 			if err := heartbeat.Send(w, f); err != nil {
 				r.app.Logger.Err(err, map[string]any{"sse reload": "heartbeat"})

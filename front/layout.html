@@ -40,9 +40,7 @@
       withCredentials: true,
     });
     evtSource.onmessage = (event) => {
-      console.log("event:", event)
-      console.log("data:", event.data)
-      eval(eval(event.data))
+      eval(JSON.parse(event.data))
     };
   </script>
   {{ end }}
