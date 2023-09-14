@@ -30,7 +30,7 @@ type ProfileView struct {
 	User string
 }
 
-func (p ProfileView) Render(w io.Writer, user string) error {
+func (p ProfileView) Render(w io.Writer) error {
 	return profileTpl.ExecuteTemplate(w, "content", p)
 }
 

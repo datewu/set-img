@@ -60,12 +60,13 @@ type myHandler struct {
 func (m *myHandler) profile(w http.ResponseWriter, r *http.Request) {
 	view := front.ProfileView{User: m.user}
 	if r.Header.Get("HX-Request") == "" {
-		if err := view.Render(w, m.user); err != nil {
+		page := view.FullPage(m.user, m.app.Env())
+		if err := page.Render(w); err != nil {
 			handler.ServerErr(w, err)
 		}
 		return
 	}
-	if err := view.Render(w, ""); err != nil {
+	if err := view.Render(w); err != nil {
 		handler.ServerErr(w, err)
 	}
 }

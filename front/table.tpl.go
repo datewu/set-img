@@ -133,7 +133,7 @@ func (t TableView) FullPage(user, env string) LayoutView {
 	l := LayoutView{
 		User:       user,
 		Env:        env,
-		ContentTpl: profileTplWithLayout,
+		ContentTpl: tableTplWithLayout,
 		Content:    t,
 	}
 	return l
