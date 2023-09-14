@@ -4,6 +4,7 @@ go 1.21.1
 
 require (
 	github.com/datewu/gtea v0.5.7
+	github.com/fsnotify/fsnotify v1.6.0
 	k8s.io/api v0.28.1
 	k8s.io/apimachinery v0.28.1
 	k8s.io/client-go v0.28.1

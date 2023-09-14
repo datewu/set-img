@@ -20,7 +20,8 @@ func New(app *gtea.App) http.Handler {
 	r.ServeFSWithGzip("/static", fs)
 	r.Get("/", index(app))
 	if app.Env() == gtea.DevEnv {
-		r.Get("/debug/reload", sse.NewHandler(reloadSSE{app: app}))
+		r.Get("/debug/reload",
+			sse.NewHandler(newReloadSSE(app, "front")))
 	}
 	r.Get("/version", serverVersion(app))
 	loginRoutes(app, r)
