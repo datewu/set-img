@@ -40,8 +40,19 @@
       withCredentials: true,
     });
     evtSource.onmessage = (event) => {
-      eval(JSON.parse(event.data))
+      const command = JSON.parse(event.data)
+      if (typeof command === 'string') {
+        console.log("eval sse message:", command)
+        eval(command)
+      } else {
+        console.log("no string sse message:", command)
+      }
     };
+    // evtSource.addEventListener("shutdown", (event) => {
+    //   console.log("sreceive shutdown message")
+    //   evtource.close()
+    // });
+
   </script>
   {{ end }}
   <footer>

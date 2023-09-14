@@ -28,10 +28,11 @@ func main() {
 
 	utils.PanicFn(initK8s)
 	cfg := &gtea.Config{
-		Port:     port,
-		Env:      env,
-		Metrics:  true,
-		LogLevel: jsonlog.LevelDebug,
+		Port:           port,
+		Env:            env,
+		Metrics:        true,
+		LogLevel:       jsonlog.LevelDebug,
+		NoWirteTimeout: true,
 	}
 	ctx := context.Background()
 	app := gtea.NewApp(ctx, cfg)
