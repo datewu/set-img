@@ -66,7 +66,8 @@ type Container struct {
 	Name, Image string
 }
 
-func (r *Resource) formatAge(d time.Duration) {
+func (r *Resource) formatAge(t time.Time) {
+	d := t.Round(time.Hour).Sub(time.Now().Round(time.Hour))
 	age := ""
 	if d.Hours() > 24 {
 		days := d.Hours() / 24
@@ -92,8 +93,7 @@ func newDeployResource(d *apps.Deployment) *Resource {
 		Name:     d.Name,
 		Replicas: int(*d.Spec.Replicas),
 	}
-	res.formatAge(time.Now().Round(time.Second).
-		Sub((d.ObjectMeta.GetCreationTimestamp().Round(time.Second))))
+	res.formatAge(d.ObjectMeta.GetCreationTimestamp().Time)
 	containes := d.Spec.Template.Spec.Containers
 	cs := make([]Container, len(containes))
 	for i, c := range containes {
@@ -110,8 +110,7 @@ func newStsResource(s *apps.StatefulSet) *Resource {
 		Name:     s.Name,
 		Replicas: int(*s.Spec.Replicas),
 	}
-	res.formatAge(time.Now().Round(time.Second).
-		Sub((s.ObjectMeta.GetCreationTimestamp().Round(time.Second))))
+	res.formatAge(s.ObjectMeta.GetCreationTimestamp().Time)
 	containes := s.Spec.Template.Spec.Containers
 	cs := make([]Container, len(containes))
 	for i, c := range containes {

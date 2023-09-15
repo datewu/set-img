@@ -40,6 +40,7 @@ func (k *k8sHandler) auth(next http.HandlerFunc) http.HandlerFunc {
 	}
 	return middle
 }
+
 func (m *myHandler) auth(next http.HandlerFunc) http.HandlerFunc {
 	middle := func(w http.ResponseWriter, r *http.Request) {
 		if m.app.Env() == gtea.DevEnv {

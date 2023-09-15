@@ -2,6 +2,7 @@ package github
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -104,6 +105,9 @@ func GetUser(token string) (*UserInfo, error) {
 	err = json.NewDecoder(resp.Body).Decode(&info)
 	if err != nil {
 		return nil, err
+	}
+	if info.Login == "" {
+		return nil, errors.New("no user")
 	}
 	return &info, nil
 }
