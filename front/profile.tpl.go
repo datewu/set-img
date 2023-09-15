@@ -3,18 +3,15 @@ package front
 import (
 	"html/template"
 	"io"
-
-	_ "embed"
+	"path/filepath"
 )
 
-//go:embed profile.html
-var profileHtml string
-
 // profileTpl is the profile template.
-var profileTpl = template.Must(template.New("profile").Parse(profileHtml))
+var profileTpl *template.Template
 var profileTplWithLayout *template.Template
 
 func initProfile() error {
+	profileTpl = template.Must(template.New("profile").ParseFiles(filepath.Join(rootDir, "profile.html")))
 	t, err := profileTpl.Clone()
 	if err != nil {
 		return err

@@ -3,17 +3,14 @@ package front
 import (
 	"html/template"
 	"io"
-
-	_ "embed"
+	"path/filepath"
 )
 
-//go:embed index.html
-var indexHtml string
-
-var indexTpl = template.Must(template.New("index").Parse(indexHtml))
+var indexTpl *template.Template
 var indexTplWithLayout *template.Template
 
 func initIndex() error {
+	indexTpl = template.Must(template.New("index").ParseFiles(filepath.Join(rootDir, "index.html")))
 	t, err := indexTpl.Clone()
 	if err != nil {
 		return err

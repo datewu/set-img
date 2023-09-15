@@ -3,14 +3,13 @@ package front
 import (
 	"html/template"
 	"io"
-
-	_ "embed"
+	"os"
+	"path/filepath"
 )
 
-//go:embed layout.html
-var layoutHtml string
+const rootDir = "front"
 
-var layoutTpl = template.Must(template.New("layout").Parse(layoutHtml))
+var layoutTpl *template.Template
 
 // LayoutView is a view for the layou
 type LayoutView struct {
@@ -32,10 +31,14 @@ func (l LayoutView) render(w io.Writer, tpl *template.Template) error {
 
 // InitOrReload init or reload the layout
 func InitOrReload() error {
+	layout, err := os.ReadFile(filepath.Join(rootDir, "layout.html"))
+	if err != nil {
+		return err
+	}
+	layoutTpl = template.Must(template.New("layout").Parse(string(layout)))
 	if err := initIndex(); err != nil {
 		return err
 	}
-
 	if err := initProfile(); err != nil {
 		return err
 	}

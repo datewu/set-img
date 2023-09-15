@@ -4,21 +4,18 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"path/filepath"
 	"time"
 
 	apps "k8s.io/api/apps/v1"
-
-	_ "embed"
 )
 
-//go:embed table.html
-var tableHtml string
-
-var tableTpl = template.Must(template.New("table").Parse(tableHtml))
+var tableTpl *template.Template
 
 var tableTplWithLayout *template.Template
 
 func initTable() error {
+	tableTpl = template.Must(template.New("table").ParseFiles(filepath.Join(rootDir, "table.html")))
 	t, err := tableTpl.Clone()
 	if err != nil {
 		return err
