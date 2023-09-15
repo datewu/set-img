@@ -89,20 +89,19 @@ func (r *reloadSSE) Send(ctx context.Context, w http.ResponseWriter, f http.Flus
 			if !ok {
 				return
 			}
-			r.app.Logger.Info("fs event")
 			if event.Has(fsnotify.Write) {
+				r.deduplicated() // ingore queue header
 				if r.reload != nil {
 					if err := r.reload(); err != nil {
 						r.app.Logger.Err(err)
+					} else {
+						r.app.Logger.Info("reload template success")
 					}
-					r.app.Logger.Info("reload template success")
 				}
-				r.deduplicated() // unnecessary
 				if err := reload.Send(w, f); err != nil {
 					r.app.Logger.Err(err)
 				}
-				r.app.Logger.Info("modified file: " + event.Name)
-				r.app.Logger.Info("send reload sse message, and return from for loop")
+				r.app.Logger.Info("send reload sse message, and return from for loop" + event.Name)
 				return
 			}
 			r.app.Logger.Info("not write event, continue")
