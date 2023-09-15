@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"io"
 	"path/filepath"
+	"strings"
 	"time"
 
 	apps "k8s.io/api/apps/v1"
@@ -65,7 +66,7 @@ type Container struct {
 }
 
 func (r *Resource) formatAge(t time.Time) {
-	d := t.Round(time.Hour).Sub(time.Now().Round(time.Hour))
+	d := time.Now().Round(time.Hour).Sub(t.Round(time.Hour))
 	age := ""
 	if d.Hours() > 24 {
 		days := d.Hours() / 24
@@ -83,7 +84,7 @@ func (r *Resource) formatAge(t time.Time) {
 		}
 	}
 	age += d.String()
-	r.Age = age
+	r.Age = strings.ReplaceAll(age, "0m0s", "")
 }
 
 func newDeployResource(d *apps.Deployment) *Resource {
