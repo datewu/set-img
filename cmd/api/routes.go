@@ -8,6 +8,7 @@ import (
 	"github.com/datewu/gtea/handler/sse"
 	"github.com/datewu/gtea/handler/static"
 	"github.com/datewu/gtea/router"
+	"github.com/datewu/set-img/front"
 )
 
 func New(app *gtea.App) http.Handler {
@@ -21,7 +22,8 @@ func New(app *gtea.App) http.Handler {
 	r.Get("/", index(app))
 	if app.Env() == gtea.DevEnv {
 		r.Get("/debug/reload",
-			sse.NewHandler(newReloadSSE(app, "front")))
+			sse.NewHandler(newReloadSSE(app, front.InitOrReload,
+				"front", "front/static")))
 	}
 	r.Get("/version", serverVersion(app))
 	loginRoutes(app, r)

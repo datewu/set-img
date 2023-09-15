@@ -60,8 +60,8 @@ type myHandler struct {
 func (m *myHandler) profile(w http.ResponseWriter, r *http.Request) {
 	view := front.ProfileView{User: m.user}
 	if r.Header.Get("HX-Request") == "" {
-		page := view.FullPage(m.user, m.app.Env())
-		if err := page.Render(w); err != nil {
+		layout := front.NewLayout(m.user, m.app.Env())
+		if err := view.FullPageRender(w, layout); err != nil {
 			handler.ServerErr(w, err)
 		}
 		return
@@ -93,8 +93,8 @@ func (m *myHandler) deploys(w http.ResponseWriter, r *http.Request) {
 	}
 	view.AddDeploys(ds)
 	if r.Header.Get("HX-Request") == "" {
-		page := view.FullPage(m.user, m.app.Env())
-		if err := page.Render(w); err != nil {
+		layout := front.NewLayout(m.user, m.app.Env())
+		if err := view.FullPageRender(w, layout); err != nil {
 			handler.ServerErr(w, err)
 		}
 		return
@@ -119,8 +119,8 @@ func (m *myHandler) sts(w http.ResponseWriter, r *http.Request) {
 	}
 	view.AddSts(ss)
 	if r.Header.Get("HX-Request") == "" {
-		page := view.FullPage(m.user, m.app.Env())
-		if err := page.Render(w); err != nil {
+		layout := front.NewLayout(m.user, m.app.Env())
+		if err := view.FullPageRender(w, layout); err != nil {
 			handler.ServerErr(w, err)
 		}
 		return

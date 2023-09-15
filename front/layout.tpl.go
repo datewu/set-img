@@ -14,14 +14,20 @@ var layoutTpl = template.Must(template.New("layout").Parse(layoutHtml))
 
 // LayoutView is a view for the layou
 type LayoutView struct {
-	User       string
-	Env        string
-	ContentTpl *template.Template
-	Content    any
+	User    string
+	Env     string
+	Content any
 }
 
-func (l LayoutView) Render(w io.Writer) error {
-	return l.ContentTpl.Execute(w, l)
+func NewLayout(user, env string) LayoutView {
+	return LayoutView{
+		User: user,
+		Env:  env,
+	}
+}
+
+func (l LayoutView) render(w io.Writer, tpl *template.Template) error {
+	return tpl.Execute(w, l)
 }
 
 // InitOrReload init or reload the layout

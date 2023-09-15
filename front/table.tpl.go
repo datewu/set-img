@@ -128,13 +128,8 @@ func (t TableView) Render(w io.Writer) error {
 	return tableTpl.ExecuteTemplate(w, "content", t)
 }
 
-// FullPage embed table with layout template
-func (t TableView) FullPage(user, env string) LayoutView {
-	l := LayoutView{
-		User:       user,
-		Env:        env,
-		ContentTpl: tableTplWithLayout,
-		Content:    t,
-	}
-	return l
+// FullPageRender ...
+func (t TableView) FullPageRender(w io.Writer, l LayoutView) error {
+	l.Content = t
+	return l.render(w, tableTplWithLayout)
 }

@@ -12,9 +12,10 @@ import (
 )
 
 type reloadSSE struct {
-	app   *gtea.App
-	fs    *fsnotify.Watcher
-	dedup time.Duration
+	app    *gtea.App
+	fs     *fsnotify.Watcher
+	dedup  time.Duration
+	reload func() error
 }
 
 func (r *reloadSSE) deduplicated() {
@@ -31,7 +32,7 @@ func (r *reloadSSE) deduplicated() {
 	}
 }
 
-func newReloadSSE(app *gtea.App, dirs ...string) *reloadSSE {
+func newReloadSSE(app *gtea.App, reload func() error, dirs ...string) *reloadSSE {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
@@ -42,7 +43,6 @@ func newReloadSSE(app *gtea.App, dirs ...string) *reloadSSE {
 		}
 	}
 	app.AddClearFn(closeFn)
-	// Add  pathes.
 	for _, d := range dirs {
 		if err = watcher.Add(d); err != nil {
 			app.Logger.Err(err)
@@ -50,9 +50,10 @@ func newReloadSSE(app *gtea.App, dirs ...string) *reloadSSE {
 		}
 	}
 	return &reloadSSE{
-		app:   app,
-		fs:    watcher,
-		dedup: 300 * time.Millisecond,
+		app:    app,
+		fs:     watcher,
+		dedup:  200 * time.Millisecond,
+		reload: reload,
 	}
 }
 
@@ -77,7 +78,8 @@ func (r *reloadSSE) Send(ctx context.Context, w http.ResponseWriter, f http.Flus
 	heartbeat := sse.NewMessage(1)
 	r.app.Logger.Info("sse send  heatbeat")
 	heartbeat.Send(w, f)
-	reload := sse.NewMessage("setTimeout(() => location.reload(), 100)")
+	//	reload := sse.NewMessage("setTimeout(() => location.reload(), 100)")
+	reload := sse.NewMessage("location.reload()")
 	for {
 		select {
 		case <-done:
@@ -89,12 +91,18 @@ func (r *reloadSSE) Send(ctx context.Context, w http.ResponseWriter, f http.Flus
 			}
 			r.app.Logger.Info("fs event")
 			if event.Has(fsnotify.Write) {
+				if r.reload != nil {
+					if err := r.reload(); err != nil {
+						r.app.Logger.Err(err)
+					}
+					r.app.Logger.Info("reload template success")
+				}
+				r.deduplicated() // unnecessary
 				if err := reload.Send(w, f); err != nil {
 					r.app.Logger.Err(err)
 				}
 				r.app.Logger.Info("modified file: " + event.Name)
 				r.app.Logger.Info("send reload sse message, and return from for loop")
-				r.deduplicated() // not necessary
 				return
 			}
 			r.app.Logger.Info("not write event, continue")

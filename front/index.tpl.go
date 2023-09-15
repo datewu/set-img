@@ -34,13 +34,8 @@ func (i IndexView) Render(w io.Writer) error {
 	return indexTpl.ExecuteTemplate(w, "content", i)
 }
 
-// FullPage embed index in layout template
-func (i IndexView) FullPage(user, env string) LayoutView {
-	l := LayoutView{
-		User:       user,
-		Env:        env,
-		ContentTpl: indexTplWithLayout,
-		Content:    i,
-	}
-	return l
+// FullPageRender ...
+func (i IndexView) FullPageRender(w io.Writer, l LayoutView) error {
+	l.Content = i
+	return l.render(w, indexTplWithLayout)
 }

@@ -35,13 +35,8 @@ func (p ProfileView) Render(w io.Writer) error {
 	return profileTpl.ExecuteTemplate(w, "content", p)
 }
 
-// FullPage embed profile with layout template
-func (p ProfileView) FullPage(user, env string) LayoutView {
-	l := LayoutView{
-		User:       user,
-		Env:        env,
-		ContentTpl: profileTplWithLayout,
-		Content:    p,
-	}
-	return l
+// FullPageRender ...
+func (p ProfileView) FullPageRender(w io.Writer, l LayoutView) error {
+	l.Content = p
+	return l.render(w, profileTplWithLayout)
 }

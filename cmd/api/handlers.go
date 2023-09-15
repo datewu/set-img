@@ -16,10 +16,10 @@ import (
 func index(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		view := front.IndexView{}
-		page := view.FullPage("", a.Env())
-		if page.Env == gtea.DevEnv {
-			page.User = "datewu"
-			if err := page.Render(w); err != nil {
+		layout := front.NewLayout("", a.Env())
+		if layout.Env == gtea.DevEnv {
+			layout.User = "datewu"
+			if err := view.FullPageRender(w, layout); err != nil {
 				handler.ServerErr(w, err)
 			}
 			return
@@ -31,7 +31,7 @@ func index(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 			} else {
 				jsonlog.Err(err)
 			}
-			if err := page.Render(w); err != nil {
+			if err := view.FullPageRender(w, layout); err != nil {
 				handler.ServerErr(w, err)
 			}
 			return
@@ -39,13 +39,13 @@ func index(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 		user, err := github.GetUser(token.Value)
 		if err != nil {
 			handler.ClearSimpleCookie(w, github.CookieName)
-			if err := page.Render(w); err != nil {
+			if err := view.FullPageRender(w, layout); err != nil {
 				handler.ServerErr(w, err)
 			}
 			return
 		}
-		page.User = user.Login
-		if err := page.Render(w); err != nil {
+		layout.User = user.Login
+		if err := view.FullPageRender(w, layout); err != nil {
 			handler.ServerErr(w, err)
 		}
 	}
