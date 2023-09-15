@@ -13,15 +13,16 @@ var indexHtml string
 var indexTpl = template.Must(template.New("index").Parse(indexHtml))
 var indexTplWithLayout *template.Template
 
-func init() {
+func initIndex() error {
 	t, err := indexTpl.Clone()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	indexTplWithLayout, err = t.AddParseTree("full index with layout", layoutTpl.Tree.Copy())
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 // IndexView ...

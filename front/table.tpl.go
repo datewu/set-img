@@ -18,15 +18,16 @@ var tableTpl = template.Must(template.New("table").Parse(tableHtml))
 
 var tableTplWithLayout *template.Template
 
-func init() {
+func initTable() error {
 	t, err := tableTpl.Clone()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	tableTplWithLayout, err = t.AddParseTree("full table with layout", layoutTpl.Tree.Copy())
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 // TableView ...

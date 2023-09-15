@@ -14,15 +14,16 @@ var profileHtml string
 var profileTpl = template.Must(template.New("profile").Parse(profileHtml))
 var profileTplWithLayout *template.Template
 
-func init() {
+func initProfile() error {
 	t, err := profileTpl.Clone()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	profileTplWithLayout, err = t.AddParseTree("full profile with layout", layoutTpl.Tree.Copy())
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 // ProfileView ...
