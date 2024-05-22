@@ -54,10 +54,12 @@ spec:
       serviceAccountName: set-img
       containers:
       - env:
-        - name: SOME_ENV
+        - name:  GITHUB-APP-CID
+          value: SOME_VALUE
+        - name:  GITHUB-APP-SECRET
           value: SOME_VALUE
         name: img
-        image: ghcr.io/datewu/set-img:v0.6.4
+        image: ghcr.io/datewu/set-img:v0.9.32
         ports:
         - containerPort: 8080
           protocol: TCP
