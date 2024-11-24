@@ -1,4 +1,4 @@
-FROM golang:1.22.6-alpine3.19 as bg-builder
+FROM golang:1.23.3-alpine3.20 as bg-builder
 RUN apk add ca-certificates git
 ARG current_time
 ARG git_description
@@ -10,7 +10,7 @@ RUN CGO_ENABLED=0 go build -ldflags \
     mv ./app-binary /app/ && \
     chmod +x /app/app-binary
 
-FROM alpine
+FROM alpine:3.20.3
 RUN apk --no-cache add ca-certificates
 WORKDIR /
 WORKDIR /

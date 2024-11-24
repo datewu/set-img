@@ -1,63 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/static/fav.svg" />
+    <link rel="stylesheet" href="/static/page.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="/static/htmx.1.9.5.min.js"></script>
+    <!-- <script src="/static/htmx.1.9.5.sse.js"></script> -->
+    <title>k8s管理工具</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/static/fav.svg" />
-  <link rel="stylesheet" href="/static/page.css" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="/static/htmx.1.9.5.min.js"></script>
-  <!-- <script src="/static/htmx.1.9.5.sse.js"></script> -->
-  <title>k8s管理工具</title>
-</head>
-
-<body hx-boost="true" hx-indicator="#in-spinner">
-  <img id="in-spinner" alt="spinner" src="/static/spinner.svg">
-  <div class="app">
-    <div class="nav">
-      <a href="/" class="logo">
-        <img src="/static/fav.svg" alt="logo" />
-      </a>
+  <body hx-boost="true" hx-indicator="#in-spinner">
+    <img id="in-spinner" alt="spinner" src="/static/spinner.svg" />
+    <div class="app">
+      <div class="nav">
+        <a href="/" class="logo">
+          <img src="/static/fav.svg" alt="logo" />
+        </a>
+        {{ if .User }}
+        <a href="/my/profile" hx-target="#content"> {{ .User }} </a>
+        {{ else }}
+        <div
+          hx-get="/login/github/init"
+          hx-swap="outerHTML"
+          hx-trigger="load"
+        ></div>
+        {{ end }}
+      </div>
       {{ if .User }}
-      <a href="/my/profile" hx-target="#content"> {{ .User }} </a>
-      {{ else }}
-      <div hx-get="/login/github/init" hx-swap="outerHTML" hx-trigger="load"></div>
+      <div hx-target="#content">
+        <a href="/my/deploys">Deploys</a>
+        <a href="/my/sts">Statefulsets</a>
+      </div>
       {{ end }}
+      <div id="content">{{ template "content" .Content }}</div>
     </div>
-    {{ if .User }}
-    <div hx-target="#content">
-      <a href="/my/deploys">Deploys</a>
-      <a href="/my/sts">Statefulsets</a>
-    </div>
+    {{ if eq .Env "development"}}
+    <script>
+      const evtSource = new EventSource("/debug/reload", {
+        withCredentials: true,
+      });
+      evtSource.onmessage = (event) => {
+        const command = JSON.parse(event.data);
+        if (typeof command === "string") {
+          console.log("eval sse message:", command);
+          eval(command);
+        } else {
+          console.log("no string sse message:", command);
+        }
+      };
+      // evtSource.addEventListener("shutdown", (event) => {
+      //   console.log("sreceive shutdown message")
+      //   evtource.close()
+      // });
+    </script>
     {{ end }}
-    <div id="content">
-      {{ template "content" .Content }}
-    </div>
-  </div>
-  {{ if eq .Env "development"}}
-  <script>
-    const evtSource = new EventSource("/debug/reload", {
-      withCredentials: true,
-    });
-    evtSource.onmessage = (event) => {
-      const command = JSON.parse(event.data)
-      if (typeof command === 'string') {
-        console.log("eval sse message:", command)
-        eval(command)
-      } else {
-        console.log("no string sse message:", command)
-      }
-    };
-    // evtSource.addEventListener("shutdown", (event) => {
-    //   console.log("sreceive shutdown message")
-    //   evtource.close()
-    // });
-
-  </script>
-  {{ end }}
-  <footer>
-    <div hx-get="/version" hx-swap="outerHTML" hx-trigger="revealed">version</div>
-  </footer>
-</body>
-
+    <footer>
+      <div hx-get="/version" hx-swap="outerHTML" hx-trigger="revealed">
+        version
+      </div>
+      <a target="_blank" style:color="unset" href="https://deoops.com">
+        fu. All rights reserved.
+      </a>
+    </footer>
+  </body>
 </html>
+
