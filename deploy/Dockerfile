@@ -1,4 +1,4 @@
-FROM golang:1.23.3-alpine3.20 as bg-builder
+FROM golang:1.23.5-alpine3.20 as bg-builder
 RUN apk add ca-certificates git
 ARG current_time
 ARG git_description
