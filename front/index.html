@@ -8,14 +8,12 @@
     </div>
   </div>
   <div id="detail">
-    <pre>
-curl -XPOST https://set-img.deoops.com/api/v1/auth/setimg \
--H 'Authorization: $TOKEN'                                \
---data-binary                                             \ 
-'{"container_name":"CHANGE-ME", "kind":"CHANGE-deploy/sts",
-"img":"${ { steps.prep.outputs.tags } }",
-"name":"CHANGE-ME","namespace":"CHANGE-ME"}'
-    </pre>
+    <detail>
+      curl -XPOST https://set-img.deoops.com/api/v1/auth/setimg \ -H
+      'Authorization: $TOKEN' \ --data-binary \ '{"container_name":"CHANGE-ME",
+      "kind":"CHANGE-deploy/sts", "img":"${ { steps.prep.outputs.tags } }",
+      "name":"CHANGE-ME","namespace":"CHANGE-ME"}'
+    </detail>
   </div>
 </div>
 
@@ -25,8 +23,8 @@ curl -XPOST https://set-img.deoops.com/api/v1/auth/setimg \
     var copyText = document.getElementById("url");
     // Copy the text inside the text field
     navigator.clipboard.writeText(copyText.innerText);
-    t.innerText = 'copied!'
-    t.blur()
+    t.innerText = "copied!";
+    t.blur();
   }
 
   function toogle(t) {
@@ -42,3 +40,4 @@ curl -XPOST https://set-img.deoops.com/api/v1/auth/setimg \
   }
 </script>
 {{ end }}
+
