@@ -12,10 +12,10 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v3
 
-    - name: Set up Go 1.23.5
+    - name: Set up Go 1.24.3
       uses: actions/setup-go@v3
       with:
-        go-version: 1.23.5
+        go-version: 1.24.3
     - run: go version
 
     - name: Get dependencies
@@ -32,10 +32,10 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v3
 
-    - name: Set up Go 1.23.5
+    - name: Set up Go 1.24.3
       uses: actions/setup-go@v3
       with:
-        go-version: 1.23.5
+        go-version: 1.24.3
     - run: go version
 
     - name: Get dependencies
