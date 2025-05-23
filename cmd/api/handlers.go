@@ -1,8 +1,11 @@
 package api
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/datewu/gtea"
@@ -154,5 +157,56 @@ func (k k8sHandler) setImg(w http.ResponseWriter, r *http.Request) {
 		handler.ServerErr(w, err)
 		return
 	}
+
+	go func() {
+		site := handler.ReadQuery(r, "site", "")
+		if len(site) < 3 {
+			fmt.Println("ignore site: %q", site)
+			return
+		}
+		set_cdn(site)
+
+	}()
 	handler.OKJSON(w, handler.Envelope{"payload": id})
+}
+
+// set poor man's cdn
+// site parameter should contain domian only, no schema included
+func set_cdn(site string) {
+	type Site struct {
+		Origin string `json:"origin"`
+	}
+
+	url := "http://r2-s3/auto-origin"
+
+	fmt.Println("start handle site: %q", url)
+	defer func() {
+		fmt.Println("handle site: %q done", url)
+	}()
+
+	data := Site{
+		Origin: site,
+	}
+
+	jsonPayload, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println("failed to marshal JSON payload: %w", err)
+		return
+	}
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		fmt.Println("failed to send HTTP POST request: %w", err)
+		return
+	}
+	defer resp.Body.Close() // Ensure the response body is closed
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("failed to read response body: %w", err)
+		return
+	}
+	fmt.Println("set poor man's cdn 'ok', %s", body)
+
 }
