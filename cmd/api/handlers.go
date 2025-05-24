@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/datewu/gtea"
 	"github.com/datewu/gtea/handler"
@@ -164,6 +165,7 @@ func (k k8sHandler) setImg(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("ignore site: %q", site)
 			return
 		}
+		time.Sleep(5 * time.Second)
 		set_cdn(site)
 
 	}()
