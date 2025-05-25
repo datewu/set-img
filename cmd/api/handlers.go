@@ -162,7 +162,7 @@ func (k k8sHandler) setImg(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		site := handler.ReadQuery(r, "site", "")
 		if len(site) < 3 {
-			fmt.Println("ignore site: %q", site)
+			fmt.Printf("ignore site: %q \n", site)
 			return
 		}
 		time.Sleep(5 * time.Second)
@@ -181,9 +181,9 @@ func set_cdn(site string) {
 
 	url := "http://r2-s3/auto-origin"
 
-	fmt.Println("start handle site: %q", url)
+	fmt.Printf("start handle site: %q \n", url)
 	defer func() {
-		fmt.Println("handle site: %q done", url)
+		fmt.Printf("handle site: %q done\n", url)
 	}()
 
 	data := Site{
@@ -192,13 +192,13 @@ func set_cdn(site string) {
 
 	jsonPayload, err := json.Marshal(data)
 	if err != nil {
-		fmt.Println("failed to marshal JSON payload: %w", err)
+		fmt.Printf("failed to marshal JSON payload: %w \n", err)
 		return
 	}
 
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonPayload))
 	if err != nil {
-		fmt.Println("failed to send HTTP POST request: %w", err)
+		fmt.Printf("failed to send HTTP POST request: %w \n", err)
 		return
 	}
 	defer resp.Body.Close() // Ensure the response body is closed
@@ -206,9 +206,9 @@ func set_cdn(site string) {
 	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("failed to read response body: %w", err)
+		fmt.Printf("failed to read response body: %w \n", err)
 		return
 	}
-	fmt.Println("set poor man's cdn 'ok', %s", body)
+	fmt.Printf("set poor man's cdn 'ok', %s \n", body)
 
 }
