@@ -165,7 +165,7 @@ func (k k8sHandler) setImg(w http.ResponseWriter, r *http.Request) {
 			fmt.Printf("ignore site: %q \n", site)
 			return
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(30 * time.Second)
 		set_cdn(site)
 
 	}()
