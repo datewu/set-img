@@ -192,13 +192,13 @@ func set_cdn(site string) {
 
 	jsonPayload, err := json.Marshal(data)
 	if err != nil {
-		fmt.Printf("failed to marshal JSON payload: %w \n", err)
+		fmt.Errorf("failed to marshal JSON payload: %w \n", err)
 		return
 	}
 
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonPayload))
 	if err != nil {
-		fmt.Printf("failed to send HTTP POST request: %w \n", err)
+		fmt.Errorf("failed to send HTTP POST request: %w \n", err)
 		return
 	}
 	defer resp.Body.Close() // Ensure the response body is closed
@@ -206,7 +206,7 @@ func set_cdn(site string) {
 	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("failed to read response body: %w \n", err)
+		fmt.Errorf("failed to read response body: %w \n", err)
 		return
 	}
 	fmt.Printf("set poor man's cdn 'ok', %s \n", body)
