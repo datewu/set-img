@@ -59,7 +59,7 @@ spec:
         - name:  GITHUB-APP-SECRET
           value: SOME_VALUE
         name: img
-        image: ghcr.io/datewu/set-img:v0.9.32
+        image: ghcr.io/datewu/set-img:v0.12.5
         ports:
         - containerPort: 8080
           protocol: TCP
