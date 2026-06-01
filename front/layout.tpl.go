@@ -7,7 +7,25 @@ import (
 	"path/filepath"
 )
 
-const rootDir = "front"
+var rootDir = findRootDir()
+
+func findRootDir() string {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "front"
+	}
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "front", "layout.html")); err == nil {
+			return filepath.Join(dir, "front")
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+	return "front"
+}
 
 var layoutTpl *template.Template
 

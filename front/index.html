@@ -1,43 +1,109 @@
 {{ define "content" }}
-<div id="content">
-  <div class="url-btns">
-    <p id="url">https://set-img.deoops.com/api/v1/auth/setimg</p>
-    <div>
-      <button hx-on="click: copyPastboard(this)">copy</button>
-      <button hx-on="click: toogle(this)">more</button>
+<div class="hero-container">
+  <div class="hero-header">
+    <span class="hero-badge">Kubernetes Automation</span>
+    <h1 class="hero-title">Automate Image Updates</h1>
+    <p class="hero-subtitle">Update deployment and statefulset container images seamlessly from your GitHub Actions or CI/CD pipelines.</p>
+  </div>
+
+  <div class="api-card">
+    <div class="api-card-header">
+      <div class="dot-indicators">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+      </div>
+      <span class="api-card-title">Webhook Endpoint</span>
+    </div>
+    
+    <div class="api-card-body">
+      <div class="endpoint-wrapper">
+        <span class="method-tag post">POST</span>
+        <code id="url" class="endpoint-code">https://set-img.deoops.com/api/v1/auth/setimg</code>
+      </div>
+      
+      <div class="action-buttons">
+        <button class="btn btn-primary" hx-on="click: copyPastboard(this)">
+          <span class="btn-icon">📋</span> <span class="btn-text">Copy URL</span>
+        </button>
+        <button class="btn btn-secondary" hx-on="click: toggleCurlDetails(this)">
+          <span class="btn-icon">🛠️</span> <span class="btn-text">Show curl Details</span>
+        </button>
+      </div>
     </div>
   </div>
-  <div id="detail">
-    <detail>
-      curl -XPOST https://set-img.deoops.com/api/v1/auth/setimg \ -H
-      'Authorization: $TOKEN' \ --data-binary \ '{"container_name":"CHANGE-ME",
-      "kind":"CHANGE-deploy/sts", "img":"${ { steps.prep.outputs.tags } }",
-      "name":"CHANGE-ME","namespace":"CHANGE-ME"}'
-    </detail>
+
+  <div id="curl-details" class="curl-details-card" style="display: none;">
+    <div class="code-header">
+      <span class="code-lang">bash</span>
+      <button class="btn-copy-code" onclick="copyCurlSnippet(this)">Copy Snippet</button>
+    </div>
+    <pre class="code-block"><code id="curl-snippet">curl -X POST https://set-img.deoops.com/api/v1/auth/setimg \
+  -H 'Authorization: Bearer $TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "namespace": "CHANGE-ME",
+    "kind": "deploy", 
+    "name": "CHANGE-ME",
+    "container_name": "CHANGE-ME",
+    "img": "registry.com/repo/image:tag"
+  }'</code></pre>
   </div>
 </div>
 
 <script>
-  function copyPastboard(t) {
-    // Get the text field
-    var copyText = document.getElementById("url");
-    // Copy the text inside the text field
-    navigator.clipboard.writeText(copyText.innerText);
-    t.innerText = "copied!";
-    t.blur();
+  function copyPastboard(btn) {
+    const copyText = document.getElementById("url");
+    navigator.clipboard.writeText(copyText.innerText.trim()).then(() => {
+      const textSpan = btn.querySelector(".btn-text");
+      const iconSpan = btn.querySelector(".btn-icon");
+      
+      const oldText = textSpan.innerText;
+      const oldIcon = iconSpan.innerText;
+      
+      textSpan.innerText = "Copied!";
+      iconSpan.innerText = "✓";
+      btn.classList.add("success-pulse");
+      
+      showToast("Webhook URL copied to clipboard!", "success");
+      
+      setTimeout(() => {
+        textSpan.innerText = oldText;
+        iconSpan.innerText = oldIcon;
+        btn.classList.remove("success-pulse");
+      }, 2000);
+    });
   }
 
-  function toogle(t) {
-    var detail = document.getElementById("detail");
-    if (t.innerText === "less") {
-      t.innerText = "more";
-      detail.style.display = "none";
+  function copyCurlSnippet(btn) {
+    const code = document.getElementById("curl-snippet");
+    navigator.clipboard.writeText(code.innerText.trim()).then(() => {
+      const oldText = btn.innerText;
+      btn.innerText = "Copied!";
+      btn.classList.add("copied");
+      
+      showToast("Curl command copied!", "success");
+      
+      setTimeout(() => {
+        btn.innerText = oldText;
+        btn.classList.remove("copied");
+      }, 2000);
+    });
+  }
+
+  function toggleCurlDetails(btn) {
+    const details = document.getElementById("curl-details");
+    const textSpan = btn.querySelector(".btn-text");
+    
+    if (details.style.display === "none") {
+      details.style.display = "block";
+      textSpan.innerText = "Hide curl Details";
+      details.classList.add("fade-in");
     } else {
-      detail.style.display = "block";
-      t.innerText = "less";
+      details.style.display = "none";
+      textSpan.innerText = "Show curl Details";
     }
-    t.blur();
+    btn.blur();
   }
 </script>
 {{ end }}
-

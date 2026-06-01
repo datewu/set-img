@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/datewu/gtea"
 	"github.com/datewu/gtea/handler"
 	"github.com/datewu/set-img/front"
 	"github.com/datewu/set-img/internal/auth/github"
 	"github.com/datewu/set-img/internal/k8s"
+	apps_v1 "k8s.io/api/apps/v1"
 )
 
 func serverVersion(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
@@ -85,8 +87,28 @@ func (m *myHandler) deploys(w http.ResponseWriter, r *http.Request) {
 		Namespace:   ns,
 		Kind:        "deploy",
 	}
+	var ds []apps_v1.Deployment
+	var err error
 	label := fmt.Sprintf("image-user=%s", m.user)
-	ds, err := k8s.ListDeployWithLabels(ns, label)
+	if ns == "all" || ns == "" {
+		ds, err = k8s.ListDeployWithLabels("", label)
+	} else if strings.Contains(ns, ",") {
+		namespaces := strings.Split(ns, ",")
+		for _, n := range namespaces {
+			n = strings.TrimSpace(n)
+			if n == "" {
+				continue
+			}
+			items, kerr := k8s.ListDeployWithLabels(n, label)
+			if kerr != nil {
+				err = kerr
+				break
+			}
+			ds = append(ds, items...)
+		}
+	} else {
+		ds, err = k8s.ListDeployWithLabels(ns, label)
+	}
 	if err != nil {
 		handler.ServerErr(w, err)
 		return
@@ -111,8 +133,28 @@ func (m *myHandler) sts(w http.ResponseWriter, r *http.Request) {
 		Namespace:   ns,
 		Kind:        "sts",
 	}
+	var ss []apps_v1.StatefulSet
+	var err error
 	label := fmt.Sprintf("image-user=%s", m.user)
-	ss, err := k8s.ListStsWithLabels(ns, label)
+	if ns == "all" || ns == "" {
+		ss, err = k8s.ListStsWithLabels("", label)
+	} else if strings.Contains(ns, ",") {
+		namespaces := strings.Split(ns, ",")
+		for _, n := range namespaces {
+			n = strings.TrimSpace(n)
+			if n == "" {
+				continue
+			}
+			items, kerr := k8s.ListStsWithLabels(n, label)
+			if kerr != nil {
+				err = kerr
+				break
+			}
+			ss = append(ss, items...)
+		}
+	} else {
+		ss, err = k8s.ListStsWithLabels(ns, label)
+	}
 	if err != nil {
 		handler.ServerErr(w, err)
 		return

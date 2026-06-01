@@ -57,6 +57,7 @@ func (t *TableView) AddSts(ss []apps.StatefulSet) {
 type Resource struct {
 	Containers []Container
 	Name       string
+	Namespace  string
 	Replicas   int
 	Age        string
 }
@@ -89,8 +90,9 @@ func (r *Resource) formatAge(t time.Time) {
 
 func newDeployResource(d *apps.Deployment) *Resource {
 	res := &Resource{
-		Name:     d.Name,
-		Replicas: int(*d.Spec.Replicas),
+		Name:      d.Name,
+		Namespace: d.Namespace,
+		Replicas:  int(*d.Spec.Replicas),
 	}
 	res.formatAge(d.ObjectMeta.GetCreationTimestamp().Time)
 	containes := d.Spec.Template.Spec.Containers
@@ -106,8 +108,9 @@ func newDeployResource(d *apps.Deployment) *Resource {
 }
 func newStsResource(s *apps.StatefulSet) *Resource {
 	res := &Resource{
-		Name:     s.Name,
-		Replicas: int(*s.Spec.Replicas),
+		Name:      s.Name,
+		Namespace: s.Namespace,
+		Replicas:  int(*s.Spec.Replicas),
 	}
 	res.formatAge(s.ObjectMeta.GetCreationTimestamp().Time)
 	containes := s.Spec.Template.Spec.Containers
@@ -130,4 +133,20 @@ func (t TableView) Render(w io.Writer) error {
 func (t TableView) FullPageRender(w io.Writer, l LayoutView) error {
 	l.Content = t
 	return l.render(w, tableTplWithLayout)
+}
+
+// ActiveNamespaces parses comma-separated namespaces for rendering tags
+func (t TableView) ActiveNamespaces() []string {
+	if t.Namespace == "all" || t.Namespace == "" {
+		return []string{"all"}
+	}
+	var res []string
+	parts := strings.Split(t.Namespace, ",")
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			res = append(res, p)
+		}
+	}
+	return res
 }

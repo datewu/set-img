@@ -1,59 +1,175 @@
 {{ define "content" }}
-<table>
-  <tr>
-    <th colspan="5">{{ or .Description "deployments" }}</th>
-  </tr>
-  <tr>
-    <th>Name</th>
-    <th>Replicas</th>
-    <th>Age</th>
-    <th>Container Name</th>
-    <th>Image Tag</th>
-  </tr>
-  {{ $ns := .Namespace}}
-  {{ $kind := .Kind}}
-  {{ range .Data}}
-  <tr>
-    {{ $rowspan := len .Containers }}
-    <td rowspan="{{ $rowspan }}">{{ .Name }}</td>
-    <td rowspan="{{ $rowspan }}">{{ .Replicas }}</td>
-    <td rowspan="{{ $rowspan }}">{{ .Age }}</td>
-    {{ $name := .Name}}
-    {{ range $index, $element := .Containers }}
-    {{if gt $index 0}}{{break}}{{end}}
-    <td>{{ .Name}}</td>
-    <td hx-put="/my/update/resource" hx-trigger="change" hx-include="this" hx-swap="none">
-      <input type="hidden" name="ns" value="{{ $ns }}">
-      <input type="hidden" name="kind" value="{{ $kind }}">
-      <input type="hidden" name="name" value="{{ $name }}">
-      <input type="hidden" name="cname" value="{{ .Name }}">
-      <input required type="text" name="image" value="{{ .Image }}" />
-    </td>
-    {{ end }}
-  </tr>
+<div class="dashboard-wrapper">
+  <!-- Control Panel -->
+  <div class="control-panel">
+    <div class="panel-header">
+      <h2 class="panel-title">{{ if eq .Kind "deploy" }}Deployments{{ else }}Statefulsets{{ end }}</h2>
+      <p class="panel-subtitle">Manage container images across namespaces</p>
+    </div>
 
-  {{ range $index, $element := .Containers }}
-  {{if eq $index 0}}{{continue}}{{end}}
-  <tr>
-    <td>{{ .Name}}</td>
-    <td hx-put="/my/update/resource" hx-trigger="change" hx-include="this" hx-swap="none">
-      <input type="hidden" name="ns" value="{{ $ns }}">
-      <input type="hidden" name="kind" value="{{ $kind }}">
-      <input type="hidden" name="name" value="{{ $name }}">
-      <input type="hidden" name="cname" value="{{ .Name }}">
-      <input required type="text" name="image" value="{{ .Image }}" />
-    </td>
-  </tr>
-  {{ end }}
+    <!-- Active Namespaces & Presets Dashboard -->
+    <div class="ns-dashboard">
+      <div class="ns-presets">
+        <span class="dashboard-label">Quick Presets:</span>
+        <div class="preset-buttons">
+          <button class="btn btn-preset {{ if eq .Namespace "all" }}active{{ end }}" hx-get="/my/{{ .Kind }}?ns=all" hx-target="#content">All</button>
+          <button class="btn btn-preset {{ if eq .Namespace "default" }}active{{ end }}" hx-get="/my/{{ .Kind }}?ns=default" hx-target="#content">default</button>
+          <button class="btn btn-preset {{ if eq .Namespace "wu" }}active{{ end }}" hx-get="/my/{{ .Kind }}?ns=wu" hx-target="#content">wu</button>
+        </div>
+      </div>
 
+      <div class="ns-custom">
+        <form hx-get="/my/{{ .Kind }}" hx-target="#content" class="ns-form">
+          <input type="text" name="ns" value="{{ .Namespace }}" placeholder="Enter namespaces (e.g. default,wu)" class="form-input ns-input" required />
+          <button type="submit" class="btn btn-primary">Query</button>
+        </form>
+      </div>
+    </div>
 
+    <!-- Live Search & Tags -->
+    <div class="filter-bar">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="resource-search" placeholder="Search by name, namespace, image..." oninput="filterTableRows(this.value)" class="form-input search-input" />
+      </div>
 
+      <div class="active-tags-container">
+        <span class="dashboard-label">Querying:</span>
+        <div class="active-tags">
+          {{ range .ActiveNamespaces }}
+            <span class="ns-pill {{ if eq . "all" }}all{{ end }}">{{ . }}</span>
+          {{ end }}
+        </div>
+      </div>
+    </div>
+  </div>
 
-  {{ else }}
-  <tr>
-    <td>no data</td>
-    {{ end}}
-  </tr>
-</table>
+  <!-- Resource Table Card -->
+  <div class="table-card">
+    <table class="dashboard-table">
+      <thead>
+        <tr>
+          <th>Namespace</th>
+          <th>Name</th>
+          <th>Replicas</th>
+          <th>Age</th>
+          <th>Container Name</th>
+          <th>Image Tag</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ $ns := .Namespace }}
+        {{ $kind := .Kind }}
+        {{ range .Data }}
+          {{ $resourceId := printf "row-%s-%s" .Name .Namespace }}
+          {{ $rowspan := len .Containers }}
+          {{ $name := .Name }}
+          {{ $resNs := .Namespace }}
+          
+          <!-- Main row (for the first container) -->
+          <tr id="{{ $resourceId }}" class="resource-row-main">
+            <td rowspan="{{ $rowspan }}" class="cell-ns">
+              <span class="ns-badge">{{ .Namespace }}</span>
+            </td>
+            <td rowspan="{{ $rowspan }}" class="cell-name">{{ .Name }}</td>
+            <td rowspan="{{ $rowspan }}" class="cell-replicas">
+              <span class="replicas-count">{{ .Replicas }}</span>
+            </td>
+            <td rowspan="{{ $rowspan }}" class="cell-age">{{ .Age }}</td>
+            
+            {{ range $index, $element := .Containers }}
+              {{ if gt $index 0 }}{{ break }}{{ end }}
+              <td class="cell-container">{{ .Name }}</td>
+              <td hx-put="/my/update/resource" hx-trigger="change" hx-include="this" hx-swap="none" class="cell-image">
+                <input type="hidden" name="ns" value="{{ $resNs }}" />
+                <input type="hidden" name="kind" value="{{ $kind }}" />
+                <input type="hidden" name="name" value="{{ $name }}" />
+                <input type="hidden" name="cname" value="{{ .Name }}" />
+                <div class="input-wrapper">
+                  <input required type="text" name="image" value="{{ .Image }}" class="form-input image-text-input" />
+                  <span class="input-focus-glow"></span>
+                </div>
+              </td>
+            {{ end }}
+          </tr>
 
+          <!-- Sub-rows (for secondary containers, if any) -->
+          {{ range $index, $element := .Containers }}
+            {{ if eq $index 0 }}{{ continue }}{{ end }}
+            <tr class="resource-row-sub" data-resource="{{ $resourceId }}">
+              <td class="cell-container">{{ .Name }}</td>
+              <td hx-put="/my/update/resource" hx-trigger="change" hx-include="this" hx-swap="none" class="cell-image">
+                <input type="hidden" name="ns" value="{{ $resNs }}" />
+                <input type="hidden" name="kind" value="{{ $kind }}" />
+                <input type="hidden" name="name" value="{{ $name }}" />
+                <input type="hidden" name="cname" value="{{ .Name }}" />
+                <div class="input-wrapper">
+                  <input required type="text" name="image" value="{{ .Image }}" class="form-input image-text-input" />
+                  <span class="input-focus-glow"></span>
+                </div>
+              </td>
+            </tr>
+          {{ end }}
+
+        {{ else }}
+          <tr class="no-data-row">
+            <td colspan="6" class="cell-no-data">
+              <div class="no-data-container">
+                <span class="no-data-icon">📦</span>
+                <p class="no-data-text">No resources found matching the criteria.</p>
+              </div>
+            </td>
+          </tr>
+        {{ end }}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  function filterTableRows(query) {
+    query = query.toLowerCase().trim();
+    const mainRows = document.querySelectorAll("tr.resource-row-main");
+    
+    mainRows.forEach(row => {
+      const name = row.querySelector(".cell-name")?.innerText.toLowerCase() || "";
+      const ns = row.querySelector(".cell-ns")?.innerText.toLowerCase() || "";
+      const replicas = row.querySelector(".cell-replicas")?.innerText.toLowerCase() || "";
+      const age = row.querySelector(".cell-age")?.innerText.toLowerCase() || "";
+      
+      // Collect all container names and images for this resource group
+      const resourceId = row.id;
+      const subRows = document.querySelectorAll(`tr.resource-row-sub[data-resource="${resourceId}"]`);
+      
+      let containerText = "";
+      // Containers on main row
+      row.querySelectorAll(".cell-container, .image-text-input").forEach(el => {
+        if (el.tagName === 'INPUT') {
+          containerText += " " + el.value.toLowerCase();
+        } else {
+          containerText += " " + el.innerText.toLowerCase();
+        }
+      });
+      
+      // Containers on sub-rows
+      subRows.forEach(sr => {
+        sr.querySelectorAll(".cell-container, .image-text-input").forEach(el => {
+          if (el.tagName === 'INPUT') {
+            containerText += " " + el.value.toLowerCase();
+          } else {
+            containerText += " " + el.innerText.toLowerCase();
+          }
+        });
+      });
+      
+      const fullText = `${name} ${ns} ${replicas} ${age} ${containerText}`;
+      const matches = fullText.includes(query);
+      
+      row.style.display = matches ? "" : "none";
+      subRows.forEach(sr => {
+        sr.style.display = matches ? "" : "none";
+      });
+    });
+  }
+</script>
 {{ end }}

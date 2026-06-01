@@ -3,38 +3,57 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/static/fav.svg" />
-    <link rel="stylesheet" href="/static/page.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="/static/htmx.1.9.5.min.js"></script>
-    <!-- <script src="/static/htmx.1.9.5.sse.js"></script> -->
-    <title>k8s管理工具</title>
+    <title>k8s Image Manager</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/page.css" />
+    <!-- HTMX 2.x -->
+    <script src="/static/htmx.2.0.9.min.js"></script>
   </head>
 
   <body hx-boost="true" hx-indicator="#in-spinner">
-    <img id="in-spinner" alt="spinner" src="/static/spinner.svg" />
-    <div class="app">
-      <div class="nav">
-        <a href="/" class="logo">
-          <img src="/static/fav.svg" alt="logo" />
-        </a>
-        {{ if .User }}
-        <a href="/my/profile" hx-target="#content"> {{ .User }} </a>
-        {{ else }}
-        <div
-          hx-get="/login/github/init"
-          hx-swap="outerHTML"
-          hx-trigger="load"
-        ></div>
-        {{ end }}
-      </div>
-      {{ if .User }}
-      <div hx-target="#content">
-        <a href="/my/deploys">Deploys</a>
-        <a href="/my/sts">Statefulsets</a>
-      </div>
-      {{ end }}
-      <div id="content">{{ template "content" .Content }}</div>
+    <div id="toast-container" class="toast-container"></div>
+    <div class="spinner-container" id="in-spinner">
+      <div class="pulse-ring"></div>
+      <img alt="spinner" src="/static/spinner.svg" class="spinner-icon" />
     </div>
+
+    <header class="app-header">
+      <div class="nav-container">
+        <a href="/" class="logo-link">
+          <img src="/static/fav.svg" alt="logo" class="logo-img" />
+          <span class="logo-text">set-img</span>
+        </a>
+        
+        <nav class="nav-links" hx-target="#content">
+          {{ if .User }}
+            <a href="/my/deploys" class="nav-btn">Deploys</a>
+            <a href="/my/sts" class="nav-btn">Statefulsets</a>
+          {{ end }}
+        </nav>
+        
+        <div class="auth-section">
+          {{ if .User }}
+            <a href="/my/profile" hx-target="#content" class="profile-link">
+              <span class="user-avatar">{{ slice .User 0 1 | printf "%s" }}</span>
+              <span class="user-name">{{ .User }}</span>
+            </a>
+          {{ else }}
+            <div hx-get="/login/github/init" hx-swap="outerHTML" hx-trigger="load" class="login-wrapper"></div>
+          {{ end }}
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <div class="container">
+        <div id="content" class="content-area">{{ template "content" .Content }}</div>
+      </div>
+    </main>
+
     {{ if eq .Env "development"}}
     <script>
       const evtSource = new EventSource("/debug/reload", {
@@ -49,20 +68,64 @@
           console.log("no string sse message:", command);
         }
       };
-      // evtSource.addEventListener("shutdown", (event) => {
-      //   console.log("sreceive shutdown message")
-      //   evtource.close()
-      // });
     </script>
     {{ end }}
-    <footer>
-      <div hx-get="/version" hx-swap="outerHTML" hx-trigger="revealed">
-        version
+
+    <footer class="app-footer">
+      <div class="footer-container">
+        <div class="footer-version" hx-get="/version" hx-swap="outerHTML" hx-trigger="revealed">version</div>
+        <a class="footer-link" target="_blank" href="https://deoops.com">fu. All rights reserved.</a>
       </div>
-      <a target="_blank" style:color="unset" href="https://deoops.com">
-        fu. All rights reserved.
-      </a>
     </footer>
+    
+    <script>
+      // Toast notification helper
+      function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+          <span class="toast-icon">${type === 'success' ? '✓' : '✗'}</span>
+          <span class="toast-message">${message}</span>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Trigger reflow for animation
+        toast.offsetHeight;
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+          toast.classList.remove('show');
+          toast.classList.add('hide');
+          toast.addEventListener('transitionend', () => {
+            toast.remove();
+          });
+        }, 3000);
+      }
+
+      // Hook into HTMX after request to show nice feedback
+      document.body.addEventListener('htmx:afterRequest', function(evt) {
+        if (evt.detail.target.tagName === 'TD' && evt.detail.pathInfo.requestPath.includes('/my/update/resource')) {
+          if (evt.detail.successful) {
+            showToast('Image updated successfully!', 'success');
+            const input = evt.detail.target.querySelector('input[type="text"]');
+            if (input) {
+              input.classList.add('flash-success');
+              setTimeout(() => input.classList.remove('flash-success'), 1500);
+            }
+          } else {
+            showToast('Failed to update image: ' + (evt.detail.xhr.responseText || 'Server error'), 'error');
+            const input = evt.detail.target.querySelector('input[type="text"]');
+            if (input) {
+              input.classList.add('flash-error');
+              setTimeout(() => input.classList.remove('flash-error'), 1500);
+            }
+          }
+        }
+      });
+    </script>
   </body>
 </html>
-
