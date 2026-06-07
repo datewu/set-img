@@ -185,9 +185,20 @@ func (m *myHandler) updateResouce(w http.ResponseWriter, r *http.Request) {
 		CName: r.FormValue("cname"),
 		Img:   r.FormValue("image"),
 	}
-	if _, ok := r.Form["env"]; ok {
+	if keys, ok := r.Form["env_key"]; ok {
 		c.UpdateEnv = true
-		c.Env = k8s.ParseEnvStr(r.FormValue("env"))
+		vals := r.Form["env_val"]
+		for i, key := range keys {
+			key = strings.TrimSpace(key)
+			if key == "" {
+				continue
+			}
+			val := ""
+			if i < len(vals) {
+				val = strings.TrimSpace(vals[i])
+			}
+			c.Env = append(c.Env, k8s.EnvVar{Name: key, Value: val})
+		}
 	}
 	err = c.UpdateResource(fmt.Sprintf("image-user=%s", m.user))
 	if err != nil {

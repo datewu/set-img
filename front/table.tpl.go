@@ -63,32 +63,39 @@ type Resource struct {
 	Age        string
 }
 
-type Container struct {
-	Name, Image string
-	EnvStr      string
+type EnvKeyVal struct {
+	Key   string
+	Value string
 }
 
-func formatEnv(env []corev1.EnvVar) string {
-	var sb strings.Builder
-	for _, ev := range env {
+type Container struct {
+	Name, Image string
+	Env         []EnvKeyVal
+}
+
+func mapEnv(env []corev1.EnvVar) []EnvKeyVal {
+	res := make([]EnvKeyVal, len(env))
+	for i, ev := range env {
 		if ev.ValueFrom == nil {
-			sb.WriteString(fmt.Sprintf("%s=%s\n", ev.Name, ev.Value))
+			res[i] = EnvKeyVal{Key: ev.Name, Value: ev.Value}
 		} else {
 			vf := ev.ValueFrom
+			var val string
 			if vf.ConfigMapKeyRef != nil {
-				sb.WriteString(fmt.Sprintf("%s=valueFrom(configMapKeyRef:%s:%s)\n", ev.Name, vf.ConfigMapKeyRef.Name, vf.ConfigMapKeyRef.Key))
+				val = fmt.Sprintf("valueFrom(configMapKeyRef:%s:%s)", vf.ConfigMapKeyRef.Name, vf.ConfigMapKeyRef.Key)
 			} else if vf.SecretKeyRef != nil {
-				sb.WriteString(fmt.Sprintf("%s=valueFrom(secretKeyRef:%s:%s)\n", ev.Name, vf.SecretKeyRef.Name, vf.SecretKeyRef.Key))
+				val = fmt.Sprintf("valueFrom(secretKeyRef:%s:%s)", vf.SecretKeyRef.Name, vf.SecretKeyRef.Key)
 			} else if vf.FieldRef != nil {
-				sb.WriteString(fmt.Sprintf("%s=valueFrom(fieldRef:%s)\n", ev.Name, vf.FieldRef.FieldPath))
+				val = fmt.Sprintf("valueFrom(fieldRef:%s)", vf.FieldRef.FieldPath)
 			} else if vf.ResourceFieldRef != nil {
-				sb.WriteString(fmt.Sprintf("%s=valueFrom(resourceFieldRef:%s:%s)\n", ev.Name, vf.ResourceFieldRef.ContainerName, vf.ResourceFieldRef.Resource))
+				val = fmt.Sprintf("valueFrom(resourceFieldRef:%s:%s)", vf.ResourceFieldRef.ContainerName, vf.ResourceFieldRef.Resource)
 			} else {
-				sb.WriteString(fmt.Sprintf("%s=valueFrom(unknown)\n", ev.Name))
+				val = "valueFrom(unknown)"
 			}
+			res[i] = EnvKeyVal{Key: ev.Name, Value: val}
 		}
 	}
-	return sb.String()
+	return res
 }
 
 func (r *Resource) formatAge(t time.Time) {
@@ -126,7 +133,7 @@ func newDeployResource(d *apps.Deployment) *Resource {
 		cs[i] = Container{
 			Name:   c.Name,
 			Image:  c.Image,
-			EnvStr: formatEnv(c.Env),
+			Env:   mapEnv(c.Env),
 		}
 	}
 	res.Containers = cs
@@ -145,7 +152,7 @@ func newStsResource(s *apps.StatefulSet) *Resource {
 		cs[i] = Container{
 			Name:   c.Name,
 			Image:  c.Image,
-			EnvStr: formatEnv(c.Env),
+			Env:   mapEnv(c.Env),
 		}
 	}
 	res.Containers = cs

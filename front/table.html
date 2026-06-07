@@ -105,7 +105,7 @@
               <div class="env-editor-card">
                 <div class="env-editor-header">
                   <span class="env-editor-title">Environment Variables for <strong>{{ (index .Containers 0).Name }}</strong></span>
-                  <span class="env-editor-subtitle">Format: KEY=VALUE (one per line). Empty lines/comments (#) are ignored. Delete a line to remove.</span>
+                  <span class="env-editor-subtitle">Add, edit, or remove environment variables. Values are masked by default.</span>
                 </div>
                 <form hx-put="/my/update/resource" hx-trigger="submit" hx-swap="none" class="env-editor-form">
                   <input type="hidden" name="ns" value="{{ $resNs }}" />
@@ -114,11 +114,24 @@
                   <input type="hidden" name="cname" value="{{ (index .Containers 0).Name }}" />
                   <input type="hidden" name="image" value="{{ (index .Containers 0).Image }}" />
                   
-                  <div class="textarea-wrapper">
-                    <textarea name="env" rows="6" class="form-input env-textarea" placeholder="DB_HOST=mysql&#10;DB_USER=root">{{ (index .Containers 0).EnvStr }}</textarea>
+                  <div class="env-inputs-container">
+                    {{ range (index .Containers 0).Env }}
+                    <div class="env-pair">
+                      <input type="text" name="env_key" value="{{ .Key }}" placeholder="KEY" class="form-input env-key-input" />
+                      <span class="env-equals">=</span>
+                      <div class="env-val-wrapper">
+                        <input type="password" name="env_val" value="{{ .Value }}" placeholder="value" class="form-input env-val-input" />
+                        <button type="button" class="btn-toggle-vis" onclick="toggleEnvVisibility(this)" title="Toggle visibility">👁</button>
+                      </div>
+                      <button type="button" class="btn-remove-env" onclick="removeEnvPair(this)" title="Remove variable">×</button>
+                    </div>
+                    {{ end }}
                   </div>
-                  
+
                   <div class="env-editor-actions">
+                    <button type="button" class="btn btn-secondary btn-sm btn-add-env" onclick="addEnvPair(this)">
+                      <span>＋</span> Add Variable
+                    </button>
                     <button type="submit" class="btn btn-primary btn-sm">Save Env</button>
                     <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEnvRow('env-{{ $resourceId }}-0')">Close</button>
                   </div>
@@ -154,7 +167,7 @@
                 <div class="env-editor-card">
                   <div class="env-editor-header">
                     <span class="env-editor-title">Environment Variables for <strong>{{ .Name }}</strong></span>
-                    <span class="env-editor-subtitle">Format: KEY=VALUE (one per line). Empty lines/comments (#) are ignored. Delete a line to remove.</span>
+                    <span class="env-editor-subtitle">Add, edit, or remove environment variables. Values are masked by default.</span>
                   </div>
                   <form hx-put="/my/update/resource" hx-trigger="submit" hx-swap="none" class="env-editor-form">
                     <input type="hidden" name="ns" value="{{ $resNs }}" />
@@ -163,11 +176,24 @@
                     <input type="hidden" name="cname" value="{{ .Name }}" />
                     <input type="hidden" name="image" value="{{ .Image }}" />
                     
-                    <div class="textarea-wrapper">
-                      <textarea name="env" rows="6" class="form-input env-textarea" placeholder="DB_HOST=mysql&#10;DB_USER=root">{{ .EnvStr }}</textarea>
+                    <div class="env-inputs-container">
+                      {{ range .Env }}
+                      <div class="env-pair">
+                        <input type="text" name="env_key" value="{{ .Key }}" placeholder="KEY" class="form-input env-key-input" />
+                        <span class="env-equals">=</span>
+                        <div class="env-val-wrapper">
+                          <input type="password" name="env_val" value="{{ .Value }}" placeholder="value" class="form-input env-val-input" />
+                          <button type="button" class="btn-toggle-vis" onclick="toggleEnvVisibility(this)" title="Toggle visibility">👁</button>
+                        </div>
+                        <button type="button" class="btn-remove-env" onclick="removeEnvPair(this)" title="Remove variable">×</button>
+                      </div>
+                      {{ end }}
                     </div>
-                    
+
                     <div class="env-editor-actions">
+                      <button type="button" class="btn btn-secondary btn-sm btn-add-env" onclick="addEnvPair(this)">
+                        <span>＋</span> Add Variable
+                      </button>
                       <button type="submit" class="btn btn-primary btn-sm">Save Env</button>
                       <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEnvRow('env-{{ $resourceId }}-{{ $index }}')">Close</button>
                     </div>
@@ -204,6 +230,40 @@
     }
   }
 
+  function addEnvPair(btn) {
+    const container = btn.closest('.env-editor-form').querySelector('.env-inputs-container');
+    const pair = document.createElement('div');
+    pair.className = 'env-pair env-pair-new';
+    pair.innerHTML = `
+      <input type="text" name="env_key" value="" placeholder="KEY" class="form-input env-key-input" />
+      <span class="env-equals">=</span>
+      <div class="env-val-wrapper">
+        <input type="text" name="env_val" value="" placeholder="value" class="form-input env-val-input" />
+        <button type="button" class="btn-toggle-vis" onclick="toggleEnvVisibility(this)" title="Toggle visibility">👁</button>
+      </div>
+      <button type="button" class="btn-remove-env" onclick="removeEnvPair(this)" title="Remove variable">×</button>
+    `;
+    container.appendChild(pair);
+    pair.querySelector('.env-key-input').focus();
+  }
+
+  function removeEnvPair(btn) {
+    const pair = btn.closest('.env-pair');
+    pair.classList.add('env-pair-removing');
+    setTimeout(() => pair.remove(), 200);
+  }
+
+  function toggleEnvVisibility(btn) {
+    const input = btn.previousElementSibling;
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = '👁‍🗨';
+    } else {
+      input.type = 'password';
+      btn.textContent = '👁';
+    }
+  }
+
   function filterTableRows(query) {
     query = query.toLowerCase().trim();
     const mainRows = document.querySelectorAll("tr.resource-row-main");
@@ -214,12 +274,10 @@
       const replicas = row.querySelector(".cell-replicas")?.innerText.toLowerCase() || "";
       const age = row.querySelector(".cell-age")?.innerText.toLowerCase() || "";
       
-      // Collect all container names and images for this resource group
       const resourceId = row.id;
       const subRows = document.querySelectorAll(`tr.resource-row-sub[data-resource="${resourceId}"]`);
       
       let containerText = "";
-      // Containers on main row
       row.querySelectorAll(".cell-container, .image-text-input").forEach(el => {
         if (el.tagName === 'INPUT') {
           containerText += " " + el.value.toLowerCase();
@@ -228,7 +286,6 @@
         }
       });
       
-      // Containers on sub-rows
       subRows.forEach(sr => {
         sr.querySelectorAll(".cell-container, .image-text-input").forEach(el => {
           if (el.tagName === 'INPUT') {
@@ -247,7 +304,6 @@
         sr.style.display = matches ? "" : "none";
       });
       
-      // Hide open env rows when filtering out resources
       const envRows = document.querySelectorAll(`tr.env-row[id^="env-${resourceId}-"]`);
       envRows.forEach(er => {
         er.style.display = "none";
