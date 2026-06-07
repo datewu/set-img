@@ -108,20 +108,38 @@
 
       // Hook into HTMX after request to show nice feedback
       document.body.addEventListener('htmx:afterRequest', function(evt) {
-        if (evt.detail.target.tagName === 'TD' && evt.detail.pathInfo.requestPath.includes('/my/update/resource')) {
-          if (evt.detail.successful) {
-            showToast('Image updated successfully!', 'success');
-            const input = evt.detail.target.querySelector('input[type="text"]');
-            if (input) {
-              input.classList.add('flash-success');
-              setTimeout(() => input.classList.remove('flash-success'), 1500);
+        if (evt.detail.pathInfo.requestPath.includes('/my/update/resource')) {
+          if (evt.detail.target.tagName === 'TD') {
+            if (evt.detail.successful) {
+              showToast('Image updated successfully!', 'success');
+              const input = evt.detail.target.querySelector('input[type="text"]');
+              if (input) {
+                input.classList.add('flash-success');
+                setTimeout(() => input.classList.remove('flash-success'), 1500);
+              }
+            } else {
+              showToast('Failed to update image: ' + (evt.detail.xhr.responseText || 'Server error'), 'error');
+              const input = evt.detail.target.querySelector('input[type="text"]');
+              if (input) {
+                input.classList.add('flash-error');
+                setTimeout(() => input.classList.remove('flash-error'), 1500);
+              }
             }
-          } else {
-            showToast('Failed to update image: ' + (evt.detail.xhr.responseText || 'Server error'), 'error');
-            const input = evt.detail.target.querySelector('input[type="text"]');
-            if (input) {
-              input.classList.add('flash-error');
-              setTimeout(() => input.classList.remove('flash-error'), 1500);
+          } else if (evt.detail.target.tagName === 'FORM') {
+            if (evt.detail.successful) {
+              showToast('Environment variables updated successfully!', 'success');
+              const textarea = evt.detail.target.querySelector('textarea');
+              if (textarea) {
+                textarea.classList.add('flash-success');
+                setTimeout(() => textarea.classList.remove('flash-success'), 1500);
+              }
+            } else {
+              showToast('Failed to update environment: ' + (evt.detail.xhr.responseText || 'Server error'), 'error');
+              const textarea = evt.detail.target.querySelector('textarea');
+              if (textarea) {
+                textarea.classList.add('flash-error');
+                setTimeout(() => textarea.classList.remove('flash-error'), 1500);
+              }
             }
           }
         }

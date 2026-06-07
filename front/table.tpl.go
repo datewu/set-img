@@ -9,6 +9,7 @@ import (
 	"time"
 
 	apps "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 var tableTpl *template.Template
@@ -64,6 +65,30 @@ type Resource struct {
 
 type Container struct {
 	Name, Image string
+	EnvStr      string
+}
+
+func formatEnv(env []corev1.EnvVar) string {
+	var sb strings.Builder
+	for _, ev := range env {
+		if ev.ValueFrom == nil {
+			sb.WriteString(fmt.Sprintf("%s=%s\n", ev.Name, ev.Value))
+		} else {
+			vf := ev.ValueFrom
+			if vf.ConfigMapKeyRef != nil {
+				sb.WriteString(fmt.Sprintf("%s=valueFrom(configMapKeyRef:%s:%s)\n", ev.Name, vf.ConfigMapKeyRef.Name, vf.ConfigMapKeyRef.Key))
+			} else if vf.SecretKeyRef != nil {
+				sb.WriteString(fmt.Sprintf("%s=valueFrom(secretKeyRef:%s:%s)\n", ev.Name, vf.SecretKeyRef.Name, vf.SecretKeyRef.Key))
+			} else if vf.FieldRef != nil {
+				sb.WriteString(fmt.Sprintf("%s=valueFrom(fieldRef:%s)\n", ev.Name, vf.FieldRef.FieldPath))
+			} else if vf.ResourceFieldRef != nil {
+				sb.WriteString(fmt.Sprintf("%s=valueFrom(resourceFieldRef:%s:%s)\n", ev.Name, vf.ResourceFieldRef.ContainerName, vf.ResourceFieldRef.Resource))
+			} else {
+				sb.WriteString(fmt.Sprintf("%s=valueFrom(unknown)\n", ev.Name))
+			}
+		}
+	}
+	return sb.String()
 }
 
 func (r *Resource) formatAge(t time.Time) {
@@ -99,8 +124,9 @@ func newDeployResource(d *apps.Deployment) *Resource {
 	cs := make([]Container, len(containes))
 	for i, c := range containes {
 		cs[i] = Container{
-			Name:  c.Name,
-			Image: c.Image,
+			Name:   c.Name,
+			Image:  c.Image,
+			EnvStr: formatEnv(c.Env),
 		}
 	}
 	res.Containers = cs
@@ -117,8 +143,9 @@ func newStsResource(s *apps.StatefulSet) *Resource {
 	cs := make([]Container, len(containes))
 	for i, c := range containes {
 		cs[i] = Container{
-			Name:  c.Name,
-			Image: c.Image,
+			Name:   c.Name,
+			Image:  c.Image,
+			EnvStr: formatEnv(c.Env),
 		}
 	}
 	res.Containers = cs

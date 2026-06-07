@@ -7,6 +7,7 @@ import (
 
 	"github.com/datewu/gtea/jsonlog"
 	apps_v1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -93,8 +94,25 @@ func setStsImg(id *ContainerPath, labels ...string) error {
 	found := false
 	for i, c := range cpy.Spec.Template.Spec.Containers {
 		if c.Name == id.CName {
-			jsonlog.Info("got new image", map[string]any{"sts": id.Name, "newImg": id.Img})
-			cpy.Spec.Template.Spec.Containers[i].Image = id.Img
+			if id.Img != "" {
+				jsonlog.Info("got new image", map[string]any{"sts": id.Name, "newImg": id.Img})
+				cpy.Spec.Template.Spec.Containers[i].Image = id.Img
+			}
+			if id.UpdateEnv {
+				jsonlog.Info("got new env variables", map[string]any{"sts": id.Name, "envCount": len(id.Env)})
+				newEnvs := make([]corev1.EnvVar, len(id.Env))
+				for idx, ev := range id.Env {
+					var original *corev1.EnvVar
+					for _, oev := range c.Env {
+						if oev.Name == ev.Name {
+							original = &oev
+							break
+						}
+					}
+					newEnvs[idx] = ParseEnvVarValue(ev.Name, ev.Value, original)
+				}
+				cpy.Spec.Template.Spec.Containers[i].Env = newEnvs
+			}
 			found = true
 			break
 		}

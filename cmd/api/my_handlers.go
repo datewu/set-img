@@ -185,6 +185,10 @@ func (m *myHandler) updateResouce(w http.ResponseWriter, r *http.Request) {
 		CName: r.FormValue("cname"),
 		Img:   r.FormValue("image"),
 	}
+	if _, ok := r.Form["env"]; ok {
+		c.UpdateEnv = true
+		c.Env = k8s.ParseEnvStr(r.FormValue("env"))
+	}
 	err = c.UpdateResource(fmt.Sprintf("image-user=%s", m.user))
 	if err != nil {
 		handler.ServerErr(w, err)

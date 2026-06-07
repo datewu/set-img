@@ -55,6 +55,7 @@
           <th>Age</th>
           <th>Container Name</th>
           <th>Image Tag</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -90,7 +91,40 @@
                   <span class="input-focus-glow"></span>
                 </div>
               </td>
+              <td class="cell-actions">
+                <button class="btn btn-secondary btn-sm btn-icon-only" onclick="toggleEnvRow('env-{{ $resourceId }}-0')" title="Edit Environment Variables">
+                  🔧 Env
+                </button>
+              </td>
             {{ end }}
+          </tr>
+
+          <!-- Env row for container 0 -->
+          <tr id="env-{{ $resourceId }}-0" class="env-row" style="display: none;">
+            <td colspan="7" class="cell-env-editor">
+              <div class="env-editor-card">
+                <div class="env-editor-header">
+                  <span class="env-editor-title">Environment Variables for <strong>{{ (index .Containers 0).Name }}</strong></span>
+                  <span class="env-editor-subtitle">Format: KEY=VALUE (one per line). Empty lines/comments (#) are ignored. Delete a line to remove.</span>
+                </div>
+                <form hx-put="/my/update/resource" hx-trigger="submit" hx-swap="none" class="env-editor-form">
+                  <input type="hidden" name="ns" value="{{ $resNs }}" />
+                  <input type="hidden" name="kind" value="{{ $kind }}" />
+                  <input type="hidden" name="name" value="{{ $name }}" />
+                  <input type="hidden" name="cname" value="{{ (index .Containers 0).Name }}" />
+                  <input type="hidden" name="image" value="{{ (index .Containers 0).Image }}" />
+                  
+                  <div class="textarea-wrapper">
+                    <textarea name="env" rows="6" class="form-input env-textarea" placeholder="DB_HOST=mysql&#10;DB_USER=root">{{ (index .Containers 0).EnvStr }}</textarea>
+                  </div>
+                  
+                  <div class="env-editor-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">Save Env</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEnvRow('env-{{ $resourceId }}-0')">Close</button>
+                  </div>
+                </form>
+              </div>
+            </td>
           </tr>
 
           <!-- Sub-rows (for secondary containers, if any) -->
@@ -108,12 +142,44 @@
                   <span class="input-focus-glow"></span>
                 </div>
               </td>
+              <td class="cell-actions">
+                <button class="btn btn-secondary btn-sm btn-icon-only" onclick="toggleEnvRow('env-{{ $resourceId }}-{{ $index }}')" title="Edit Environment Variables">
+                  🔧 Env
+                </button>
+              </td>
+            </tr>
+            <!-- Env row for container {{ $index }} -->
+            <tr id="env-{{ $resourceId }}-{{ $index }}" class="env-row" style="display: none;">
+              <td colspan="7" class="cell-env-editor">
+                <div class="env-editor-card">
+                  <div class="env-editor-header">
+                    <span class="env-editor-title">Environment Variables for <strong>{{ .Name }}</strong></span>
+                    <span class="env-editor-subtitle">Format: KEY=VALUE (one per line). Empty lines/comments (#) are ignored. Delete a line to remove.</span>
+                  </div>
+                  <form hx-put="/my/update/resource" hx-trigger="submit" hx-swap="none" class="env-editor-form">
+                    <input type="hidden" name="ns" value="{{ $resNs }}" />
+                    <input type="hidden" name="kind" value="{{ $kind }}" />
+                    <input type="hidden" name="name" value="{{ $name }}" />
+                    <input type="hidden" name="cname" value="{{ .Name }}" />
+                    <input type="hidden" name="image" value="{{ .Image }}" />
+                    
+                    <div class="textarea-wrapper">
+                      <textarea name="env" rows="6" class="form-input env-textarea" placeholder="DB_HOST=mysql&#10;DB_USER=root">{{ .EnvStr }}</textarea>
+                    </div>
+                    
+                    <div class="env-editor-actions">
+                      <button type="submit" class="btn btn-primary btn-sm">Save Env</button>
+                      <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEnvRow('env-{{ $resourceId }}-{{ $index }}')">Close</button>
+                    </div>
+                  </form>
+                </div>
+              </td>
             </tr>
           {{ end }}
 
         {{ else }}
           <tr class="no-data-row">
-            <td colspan="6" class="cell-no-data">
+            <td colspan="7" class="cell-no-data">
               <div class="no-data-container">
                 <span class="no-data-icon">📦</span>
                 <p class="no-data-text">No resources found matching the criteria.</p>
@@ -127,6 +193,17 @@
 </div>
 
 <script>
+  function toggleEnvRow(rowId) {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    if (row.style.display === "none") {
+      row.style.display = "table-row";
+      row.classList.add("fade-in");
+    } else {
+      row.style.display = "none";
+    }
+  }
+
   function filterTableRows(query) {
     query = query.toLowerCase().trim();
     const mainRows = document.querySelectorAll("tr.resource-row-main");
@@ -168,6 +245,12 @@
       row.style.display = matches ? "" : "none";
       subRows.forEach(sr => {
         sr.style.display = matches ? "" : "none";
+      });
+      
+      // Hide open env rows when filtering out resources
+      const envRows = document.querySelectorAll(`tr.env-row[id^="env-${resourceId}-"]`);
+      envRows.forEach(er => {
+        er.style.display = "none";
       });
     });
   }
