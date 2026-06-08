@@ -51,8 +51,12 @@ func myRoutes(app *gtea.App, r *router.RoutesGroup) {
 	my.Get("/sts", h.sts)
 	my.Put("/update/resource", h.updateResouce)
 	my.Get("/pods", h.listPods)
-	my.Get("/logs", h.logs)
 
+	// SSE /logs route must NOT use GzipMiddleware — gzip buffers data
+	// and breaks real-time streaming; also gzipResponseWriter doesn't
+	// implement http.Flusher, causing a superfluous WriteHeader error.
+	logsGroup := r.Group("/my", h.auth)
+	logsGroup.Get("/logs", h.logs)
 }
 
 func addBusinessRoutes(app *gtea.App, r *router.RoutesGroup) {
