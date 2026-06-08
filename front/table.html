@@ -95,6 +95,9 @@
                 <button class="btn btn-secondary btn-sm btn-icon-only" onclick="toggleEnvRow('env-{{ $resourceId }}-0')" title="Edit Environment Variables">
                   🔧 Env
                 </button>
+                <button class="btn btn-secondary btn-sm btn-icon-only btn-logs" onclick="toggleLogRow('log-{{ $resourceId }}-0', '{{ $resNs }}', '{{ $kind }}', '{{ $name }}', '{{ (index .Containers 0).Name }}')" title="View Container Logs">
+                  📋 Logs
+                </button>
               </td>
             {{ end }}
           </tr>
@@ -140,6 +143,33 @@
             </td>
           </tr>
 
+          <!-- Log viewer row for container 0 -->
+          <tr id="log-{{ $resourceId }}-0" class="log-row" style="display: none;">
+            <td colspan="7" class="cell-log-viewer">
+              <div class="log-viewer-card">
+                <div class="log-viewer-header">
+                  <div class="log-viewer-title-row">
+                    <span class="log-viewer-title">📋 Logs for <strong>{{ (index .Containers 0).Name }}</strong></span>
+                    <span class="log-viewer-badge">Live</span>
+                  </div>
+                  <div class="log-viewer-controls">
+                    <label class="log-pod-label">Pod:
+                      <select class="form-input log-pod-select"
+                        hx-get="/my/pods?ns={{ $resNs }}&kind={{ $kind }}&name={{ $name }}"
+                        hx-trigger="load"
+                        hx-swap="innerHTML">
+                      </select>
+                    </label>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="clearLogOutput(this)">Clear</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="toggleAutoScroll(this)">Auto-scroll: On</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="toggleLogRow('log-{{ $resourceId }}-0')">Close</button>
+                  </div>
+                </div>
+                <div class="log-output" data-auto-scroll="true"></div>
+              </div>
+            </td>
+          </tr>
+
           <!-- Sub-rows (for secondary containers, if any) -->
           {{ range $index, $element := .Containers }}
             {{ if eq $index 0 }}{{ continue }}{{ end }}
@@ -158,6 +188,9 @@
               <td class="cell-actions">
                 <button class="btn btn-secondary btn-sm btn-icon-only" onclick="toggleEnvRow('env-{{ $resourceId }}-{{ $index }}')" title="Edit Environment Variables">
                   🔧 Env
+                </button>
+                <button class="btn btn-secondary btn-sm btn-icon-only btn-logs" onclick="toggleLogRow('log-{{ $resourceId }}-{{ $index }}', '{{ $resNs }}', '{{ $kind }}', '{{ $name }}', '{{ .Name }}')" title="View Container Logs">
+                  📋 Logs
                 </button>
               </td>
             </tr>
@@ -198,6 +231,33 @@
                       <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEnvRow('env-{{ $resourceId }}-{{ $index }}')">Close</button>
                     </div>
                   </form>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Log viewer row for container {{ $index }} -->
+            <tr id="log-{{ $resourceId }}-{{ $index }}" class="log-row" style="display: none;">
+              <td colspan="7" class="cell-log-viewer">
+                <div class="log-viewer-card">
+                  <div class="log-viewer-header">
+                    <div class="log-viewer-title-row">
+                      <span class="log-viewer-title">📋 Logs for <strong>{{ .Name }}</strong></span>
+                      <span class="log-viewer-badge">Live</span>
+                    </div>
+                    <div class="log-viewer-controls">
+                      <label class="log-pod-label">Pod:
+                        <select class="form-input log-pod-select"
+                          hx-get="/my/pods?ns={{ $resNs }}&kind={{ $kind }}&name={{ $name }}"
+                          hx-trigger="load"
+                          hx-swap="innerHTML">
+                        </select>
+                      </label>
+                      <button type="button" class="btn btn-secondary btn-sm" onclick="clearLogOutput(this)">Clear</button>
+                      <button type="button" class="btn btn-secondary btn-sm" onclick="toggleAutoScroll(this)">Auto-scroll: On</button>
+                      <button type="button" class="btn btn-secondary btn-sm" onclick="toggleLogRow('log-{{ $resourceId }}-{{ $index }}')">Close</button>
+                    </div>
+                  </div>
+                  <div class="log-output" data-auto-scroll="true"></div>
                 </div>
               </td>
             </tr>
@@ -310,5 +370,130 @@
       });
     });
   }
+  // Track active EventSource connections per log row
+  const activeLogStreams = {};
+
+  function toggleLogRow(rowId, ns, kind, name, container) {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+
+    if (row.style.display === "none") {
+      row.style.display = "table-row";
+      row.classList.add("fade-in");
+      // Start log stream after a short delay to let the pod select populate
+      setTimeout(() => startLogStream(rowId, ns, kind, name, container), 300);
+    } else {
+      stopLogStream(rowId);
+      row.style.display = "none";
+    }
+  }
+
+  function startLogStream(rowId, ns, kind, name, container) {
+    stopLogStream(rowId); // Close any existing stream
+
+    const row = document.getElementById(rowId);
+    if (!row) return;
+
+    const logOutput = row.querySelector('.log-output');
+    const podSelect = row.querySelector('.log-pod-select');
+    const badge = row.querySelector('.log-viewer-badge');
+
+    const pod = podSelect ? podSelect.value : '';
+    let url = `/my/logs?ns=${encodeURIComponent(ns)}&kind=${encodeURIComponent(kind)}&name=${encodeURIComponent(name)}&container=${encodeURIComponent(container)}`;
+    if (pod) {
+      url += `&pod=${encodeURIComponent(pod)}`;
+    }
+
+    const evtSource = new EventSource(url);
+    activeLogStreams[rowId] = evtSource;
+
+    if (badge) {
+      badge.classList.add('live');
+      badge.textContent = 'Live';
+    }
+
+    evtSource.onmessage = (event) => {
+      if (!logOutput) return;
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      try {
+        line.textContent = JSON.parse(event.data);
+      } catch {
+        line.textContent = event.data;
+      }
+      logOutput.appendChild(line);
+
+      // Auto-scroll if enabled
+      if (logOutput.dataset.autoScroll === 'true') {
+        logOutput.scrollTop = logOutput.scrollHeight;
+      }
+    };
+
+    evtSource.addEventListener('error', (event) => {
+      const errLine = document.createElement('div');
+      errLine.className = 'log-line log-line-error';
+      if (event.data) {
+        try {
+          errLine.textContent = '[ERROR] ' + JSON.parse(event.data);
+        } catch {
+          errLine.textContent = '[ERROR] ' + event.data;
+        }
+      } else {
+        errLine.textContent = '[Stream disconnected]';
+      }
+      if (logOutput) logOutput.appendChild(errLine);
+      if (badge) {
+        badge.classList.remove('live');
+        badge.textContent = 'Disconnected';
+      }
+    });
+
+    evtSource.addEventListener('shutdown', () => {
+      if (badge) {
+        badge.classList.remove('live');
+        badge.textContent = 'Ended';
+      }
+      stopLogStream(rowId);
+    });
+
+    evtSource.onerror = () => {
+      if (evtSource.readyState === EventSource.CLOSED) {
+        if (badge) {
+          badge.classList.remove('live');
+          badge.textContent = 'Closed';
+        }
+      }
+    };
+
+    // Reconnect on pod change
+    if (podSelect) {
+      podSelect.onchange = () => {
+        startLogStream(rowId, ns, kind, name, container);
+      };
+    }
+  }
+
+  function stopLogStream(rowId) {
+    if (activeLogStreams[rowId]) {
+      activeLogStreams[rowId].close();
+      delete activeLogStreams[rowId];
+    }
+  }
+
+  function clearLogOutput(btn) {
+    const logOutput = btn.closest('.log-viewer-card').querySelector('.log-output');
+    if (logOutput) {
+      logOutput.innerHTML = '';
+    }
+  }
+
+  function toggleAutoScroll(btn) {
+    const logOutput = btn.closest('.log-viewer-card').querySelector('.log-output');
+    if (!logOutput) return;
+    const isOn = logOutput.dataset.autoScroll === 'true';
+    logOutput.dataset.autoScroll = isOn ? 'false' : 'true';
+    btn.textContent = isOn ? 'Auto-scroll: Off' : 'Auto-scroll: On';
+  }
+
 </script>
 {{ end }}

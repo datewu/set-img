@@ -131,8 +131,8 @@ func newDeployResource(d *apps.Deployment) *Resource {
 	cs := make([]Container, len(containes))
 	for i, c := range containes {
 		cs[i] = Container{
-			Name:   c.Name,
-			Image:  c.Image,
+			Name:  c.Name,
+			Image: c.Image,
 			Env:   mapEnv(c.Env),
 		}
 	}
@@ -150,8 +150,8 @@ func newStsResource(s *apps.StatefulSet) *Resource {
 	cs := make([]Container, len(containes))
 	for i, c := range containes {
 		cs[i] = Container{
-			Name:   c.Name,
-			Image:  c.Image,
+			Name:  c.Name,
+			Image: c.Image,
 			Env:   mapEnv(c.Env),
 		}
 	}

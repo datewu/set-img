@@ -50,6 +50,8 @@ func myRoutes(app *gtea.App, r *router.RoutesGroup) {
 	my.Get("/deploys", h.deploys)
 	my.Get("/sts", h.sts)
 	my.Put("/update/resource", h.updateResouce)
+	my.Get("/pods", h.listPods)
+	my.Get("/logs", h.logs)
 
 }
 
