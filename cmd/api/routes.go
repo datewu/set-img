@@ -44,19 +44,20 @@ func loginRoutes(app *gtea.App, r *router.RoutesGroup) {
 func myRoutes(app *gtea.App, r *router.RoutesGroup) {
 	h := &myHandler{app: app}
 	my := r.Group("/my", h.auth)
-	my.Use(handler.GzipMiddleware)
-	my.Delete("/logout", h.logout)
-	my.Get("/profile", h.profile)
-	my.Get("/deploys", h.deploys)
-	my.Get("/sts", h.sts)
-	my.Put("/update/resource", h.updateResouce)
-	my.Get("/pods", h.listPods)
 
 	// SSE /logs route must NOT use GzipMiddleware — gzip buffers data
 	// and breaks real-time streaming; also gzipResponseWriter doesn't
 	// implement http.Flusher, causing a superfluous WriteHeader error.
-	logsGroup := r.Group("/my", h.auth)
-	logsGroup.Get("/logs", h.logs)
+	my.Get("/logs", h.logs)
+
+	myGzip := my.Group("")
+	myGzip.Use(handler.GzipMiddleware)
+	myGzip.Delete("/logout", h.logout)
+	myGzip.Get("/profile", h.profile)
+	myGzip.Get("/deploys", h.deploys)
+	myGzip.Get("/sts", h.sts)
+	myGzip.Put("/update/resource", h.updateResouce)
+	myGzip.Get("/pods", h.listPods)
 }
 
 func addBusinessRoutes(app *gtea.App, r *router.RoutesGroup) {
