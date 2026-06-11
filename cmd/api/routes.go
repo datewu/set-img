@@ -45,14 +45,14 @@ func myRoutes(app *gtea.App, r *router.RoutesGroup) {
 	h := &myHandler{app: app}
 	my := r.Group("/my", h.auth)
 	my.Get("/logs", h.logs)
-	my.Use(handler.GzipMiddleware)
-	my.Delete("/logout", h.logout)
-	my.Get("/profile", h.profile)
-	my.Get("/deploys", h.deploys)
-	my.Get("/sts", h.sts)
-	my.Put("/update/resource", h.updateResouce)
-	my.Get("/pods", h.listPods)
 
+	myGzip := my.Group("", handler.GzipMiddleware)
+	myGzip.Delete("/logout", h.logout)
+	myGzip.Get("/profile", h.profile)
+	myGzip.Get("/deploys", h.deploys)
+	myGzip.Get("/sts", h.sts)
+	myGzip.Put("/update/resource", h.updateResouce)
+	myGzip.Get("/pods", h.listPods)
 }
 
 func addBusinessRoutes(app *gtea.App, r *router.RoutesGroup) {

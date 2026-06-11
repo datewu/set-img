@@ -95,7 +95,7 @@
                 <button class="btn btn-secondary btn-sm btn-icon-only" onclick="toggleEnvRow('env-{{ $resourceId }}-0')" title="Edit Environment Variables">
                   🔧 Env
                 </button>
-                <button class="btn btn-secondary btn-sm btn-icon-only btn-logs" onclick="toggleLogRow('log-{{ $resourceId }}-0', '{{ $resNs }}', '{{ $kind }}', '{{ $name }}', '{{ (index .Containers 0).Name }}')" title="View Container Logs">
+                <button class="btn btn-secondary btn-sm btn-icon-only btn-logs" onclick="toggleLogRow('log-{{ $resourceId }}-0', '{{ $resNs }}', '{{ $kind }}', '{{ $name }}', '{{ .Name }}')" title="View Container Logs">
                   📋 Logs
                 </button>
               </td>
