@@ -44,6 +44,7 @@ func loginRoutes(app *gtea.App, r *router.RoutesGroup) {
 func myRoutes(app *gtea.App, r *router.RoutesGroup) {
 	h := &myHandler{app: app}
 	my := r.Group("/my", h.auth)
+	my.Get("/logs", h.logs)
 	my.Use(handler.GzipMiddleware)
 	my.Delete("/logout", h.logout)
 	my.Get("/profile", h.profile)
@@ -51,7 +52,6 @@ func myRoutes(app *gtea.App, r *router.RoutesGroup) {
 	my.Get("/sts", h.sts)
 	my.Put("/update/resource", h.updateResouce)
 	my.Get("/pods", h.listPods)
-	my.Get("/logs", h.logs)
 
 }
 
