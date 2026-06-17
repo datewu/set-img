@@ -677,14 +677,20 @@ body {
   background-color: rgba(255, 255, 255, 0.015);
 }
 
-.ns-badge {
-  background-color: rgba(99, 102, 241, 0.08);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  color: #a5b4fc;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
+.table-card-header {
+  padding: 0.8rem 1.2rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.table-card-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.table-card-subtitle strong {
+  color: var(--text-primary);
+  font-family: monospace;
 }
 
 .cell-name {
@@ -713,7 +719,7 @@ body {
 
 /* Image change cell & Inputs */
 .cell-image {
-  max-width: 250px;
+  min-width: 350px;
 }
 
 .input-wrapper {
@@ -882,7 +888,11 @@ body {
 /* Env Editor Styles */
 .cell-actions {
   text-align: center;
-  width: 90px;
+  white-space: nowrap;
+}
+
+.cell-actions .btn-icon-only {
+  margin: 0 2px;
 }
 
 .btn-icon-only {

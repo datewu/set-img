@@ -46,10 +46,12 @@
 
   <!-- Resource Table Card -->
   <div class="table-card">
+    <div class="table-card-header">
+      <span class="table-card-subtitle">Namespace: <strong>{{ .Namespace }}</strong></span>
+    </div>
     <table class="dashboard-table">
       <thead>
         <tr>
-          <th>Namespace</th>
           <th>Name</th>
           <th>Replicas</th>
           <th>Age</th>
@@ -69,9 +71,6 @@
           
           <!-- Main row (for the first container) -->
           <tr id="{{ $resourceId }}" class="resource-row-main">
-            <td rowspan="{{ $rowspan }}" class="cell-ns">
-              <span class="ns-badge">{{ .Namespace }}</span>
-            </td>
             <td rowspan="{{ $rowspan }}" class="cell-name">{{ .Name }}</td>
             <td rowspan="{{ $rowspan }}" class="cell-replicas">
               <span class="replicas-count">{{ .Replicas }}</span>
@@ -104,7 +103,7 @@
 
           <!-- Env row for container 0 -->
           <tr id="env-{{ $resourceId }}-0" class="env-row" style="display: none;">
-            <td colspan="7" class="cell-env-editor">
+            <td colspan="6" class="cell-env-editor">
               <div class="env-editor-card">
                 <div class="env-editor-header">
                   <span class="env-editor-title">Environment Variables for <strong>{{ (index .Containers 0).Name }}</strong></span>
@@ -145,7 +144,7 @@
 
           <!-- Log viewer row for container 0 -->
           <tr id="log-{{ $resourceId }}-0" class="log-row" style="display: none;">
-            <td colspan="7" class="cell-log-viewer">
+            <td colspan="6" class="cell-log-viewer">
               <div class="log-viewer-card">
                 <div class="log-viewer-header">
                   <div class="log-viewer-title-row">
@@ -196,7 +195,7 @@
             </tr>
             <!-- Env row for container {{ $index }} -->
             <tr id="env-{{ $resourceId }}-{{ $index }}" class="env-row" style="display: none;">
-              <td colspan="7" class="cell-env-editor">
+              <td colspan="6" class="cell-env-editor">
                 <div class="env-editor-card">
                   <div class="env-editor-header">
                     <span class="env-editor-title">Environment Variables for <strong>{{ .Name }}</strong></span>
@@ -237,7 +236,7 @@
 
             <!-- Log viewer row for container {{ $index }} -->
             <tr id="log-{{ $resourceId }}-{{ $index }}" class="log-row" style="display: none;">
-              <td colspan="7" class="cell-log-viewer">
+              <td colspan="6" class="cell-log-viewer">
                 <div class="log-viewer-card">
                   <div class="log-viewer-header">
                     <div class="log-viewer-title-row">
@@ -265,7 +264,7 @@
 
         {{ else }}
           <tr class="no-data-row">
-            <td colspan="7" class="cell-no-data">
+            <td colspan="6" class="cell-no-data">
               <div class="no-data-container">
                 <span class="no-data-icon">📦</span>
                 <p class="no-data-text">No resources found matching the criteria.</p>
@@ -330,7 +329,6 @@
     
     mainRows.forEach(row => {
       const name = row.querySelector(".cell-name")?.innerText.toLowerCase() || "";
-      const ns = row.querySelector(".cell-ns")?.innerText.toLowerCase() || "";
       const replicas = row.querySelector(".cell-replicas")?.innerText.toLowerCase() || "";
       const age = row.querySelector(".cell-age")?.innerText.toLowerCase() || "";
       
@@ -356,7 +354,7 @@
         });
       });
       
-      const fullText = `${name} ${ns} ${replicas} ${age} ${containerText}`;
+      const fullText = `${name} ${replicas} ${age} ${containerText}`;
       const matches = fullText.includes(query);
       
       row.style.display = matches ? "" : "none";
