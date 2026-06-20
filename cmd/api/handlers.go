@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/datewu/gtea"
@@ -179,7 +180,7 @@ func set_cdn(site string) {
 		Origin string `json:"origin"`
 	}
 
-	url := "http://r2-s3/auto-origin"
+	url := os.Getenv("R23_URL") + "/auto-origin"
 
 	fmt.Printf("start handle site: %q \n", url)
 	defer func() {
