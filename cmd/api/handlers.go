@@ -23,8 +23,14 @@ func index(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 		view := front.IndexView{}
 		layout := front.NewLayout("", a.Env())
 		if layout.Env == gtea.DevEnv {
-			layout.User = "datewu"
-			if err := view.FullPageRender(w, layout); err != nil {
+		layout.User = "datewu"
+		view.User = layout.User
+		sites, err := k8s.ListIngressHostsByLabel("wu", "ingress-user=datewu")
+		if err != nil {
+			jsonlog.Err(err)
+		}
+		view.Sites = sites
+		if err := view.FullPageRender(w, layout); err != nil {
 				handler.ServerErr(w, err)
 			}
 			return
@@ -50,6 +56,12 @@ func index(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		layout.User = user.Login
+		view.User = user.Login
+		sites, err := k8s.ListIngressHostsByLabel("wu", fmt.Sprintf("ingress-user=%s", user.Login))
+		if err != nil {
+			jsonlog.Err(err)
+		}
+		view.Sites = sites
 		if err := view.FullPageRender(w, layout); err != nil {
 			handler.ServerErr(w, err)
 		}

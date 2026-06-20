@@ -52,6 +52,7 @@ func myRoutes(app *gtea.App, r *router.RoutesGroup) {
 	myGzip.Get("/deploys", h.deploys)
 	myGzip.Get("/sts", h.sts)
 	myGzip.Put("/update/resource", h.updateResouce)
+	myGzip.Post("/update/cdn", h.updateCDN)
 	myGzip.Get("/pods", h.listPods)
 }
 

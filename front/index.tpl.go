@@ -24,6 +24,8 @@ func initIndex() error {
 
 // IndexView ...
 type IndexView struct {
+	User  string
+	Sites []string
 }
 
 // Render ...
