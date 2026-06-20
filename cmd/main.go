@@ -32,7 +32,7 @@ func main() {
 		Env:            env,
 		Metrics:        true,
 		LogLevel:       jsonlog.LevelDebug,
-		NoWirteTimeout: true,
+		NoWriteTimeout : true,
 	}
 	ctx := context.Background()
 	app := gtea.NewApp(ctx, cfg)
