@@ -23,8 +23,14 @@ func index(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 		view := front.IndexView{}
 		layout := front.NewLayout("", a.Env())
 		if layout.Env == gtea.DevEnv {
-			layout.User = "datewu"
-			if err := view.FullPageRender(w, layout); err != nil {
+		layout.User = "datewu"
+		view.User = layout.User
+		k8sSites, err := k8s.ListIngressSitesByLabel("wu", "ingress-user=datewu")
+		if err != nil {
+			jsonlog.Err(err)
+		}
+		view.Sites = toFrontSites(k8sSites)
+		if err := view.FullPageRender(w, layout); err != nil {
 				handler.ServerErr(w, err)
 			}
 			return
@@ -50,6 +56,12 @@ func index(a *gtea.App) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		layout.User = user.Login
+		view.User = user.Login
+		k8sSites, err := k8s.ListIngressSitesByLabel("wu", fmt.Sprintf("ingress-user=%s", user.Login))
+		if err != nil {
+			jsonlog.Err(err)
+		}
+		view.Sites = toFrontSites(k8sSites)
 		if err := view.FullPageRender(w, layout); err != nil {
 			handler.ServerErr(w, err)
 		}
@@ -215,4 +227,12 @@ func set_cdn(site string) {
 	}
 	fmt.Printf("set poor man's cdn 'ok', %s \n", body)
 
+}
+
+func toFrontSites(sites []k8s.IngressSite) []front.IngressSite {
+	out := make([]front.IngressSite, len(sites))
+	for i, s := range sites {
+		out[i] = front.IngressSite{Ns: s.Ns, Subdomain: s.Subdomain}
+	}
+	return out
 }

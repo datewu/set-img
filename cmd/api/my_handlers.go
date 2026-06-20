@@ -172,6 +172,42 @@ func (m *myHandler) sts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (m *myHandler) updateCDN(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		handler.BadRequestErr(w, err)
+		return
+	}
+	subdomain := strings.TrimSpace(r.FormValue("subdomain"))
+	ns := strings.TrimSpace(r.FormValue("namespace"))
+	if subdomain == "" {
+		handler.BadRequestMsg(w, "subdomain is required")
+		return
+	}
+	if ns == "" {
+		ns = "wu"
+	}
+	sites, err := k8s.ListIngressSitesByLabel(ns, fmt.Sprintf("ingress-user=%s", m.user))
+	if err != nil {
+		handler.ServerErr(w, err)
+		return
+	}
+	allowed := false
+	for _, s := range sites {
+		if s.Subdomain == subdomain {
+			allowed = true
+			break
+		}
+	}
+	if !allowed {
+		handler.BadRequestMsg(w, "you do not have permission to update CDN for this site")
+		return
+	}
+	site := subdomain + ".deoops.com"
+	go set_cdn(site)
+	handler.OKText(w, fmt.Sprintf("CDN update triggered for %s", site))
+}
+
 func (m *myHandler) updateResouce(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {

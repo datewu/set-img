@@ -22,6 +22,11 @@ rules:
   resources:
     - deployments
     - statefulsets
+- apiGroups:
+  - "networking.k8s.io"
+  verbs: ["get", "list"]
+  resources:
+    - ingresses
 
 ---
 kind: ClusterRoleBinding

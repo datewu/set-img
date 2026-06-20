@@ -24,6 +24,27 @@ func initIndex() error {
 
 // IndexView ...
 type IndexView struct {
+	User  string
+	Sites []IngressSite
+}
+
+// IngressSite mirrors k8s.IngressSite for template use.
+type IngressSite struct {
+	Ns        string
+	Subdomain string
+}
+
+// Namespaces returns the deduplicated list of namespaces from Sites.
+func (i IndexView) Namespaces() []string {
+	seen := make(map[string]struct{})
+	var ns []string
+	for _, s := range i.Sites {
+		if _, exists := seen[s.Ns]; !exists {
+			seen[s.Ns] = struct{}{}
+			ns = append(ns, s.Ns)
+		}
+	}
+	return ns
 }
 
 // Render ...

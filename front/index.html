@@ -33,6 +33,60 @@
     </div>
   </div>
 
+  {{ if .User }}
+  <div class="api-card">
+    <div class="api-card-header">
+      <div class="dot-indicators">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+      </div>
+      <span class="api-card-title">Update CDN</span>
+    </div>
+    
+    <div class="api-card-body">
+      {{ if .Sites }}
+      <p style="margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+        Manually trigger CDN origin update for one of your sites.
+      </p>
+      <form hx-post="/my/update/cdn" hx-swap="none" hx-on::after-request="if(event.detail.successful){showToast('CDN update triggered!','success')}else{showToast('Failed: '+(event.detail.xhr.responseText||'Server error'),'error')}" class="cdn-form" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+        <select name="namespace" id="cdn-ns-select" required class="form-input" onchange="filterCdnSites()" style="max-width: 150px;">
+          {{ range .Namespaces }}
+          <option value="{{ . }}" {{ if eq . "wu" }}selected{{ end }}>{{ . }}</option>
+          {{ end }}
+        </select>
+        <select name="subdomain" id="cdn-site-select" required class="form-input" style="flex: 1; max-width: 300px;">
+          {{ range .Sites }}
+          <option value="{{ .Subdomain }}" data-ns="{{ .Ns }}">{{ .Subdomain }}</option>
+          {{ end }}
+        </select>
+        <button type="submit" class="btn btn-primary">Update CDN</button>
+      </form>
+      <script>
+        function filterCdnSites() {
+          var ns = document.getElementById('cdn-ns-select').value;
+          var siteSelect = document.getElementById('cdn-site-select');
+          var options = siteSelect.options;
+          var firstVisible = null;
+          for (var i = 0; i < options.length; i++) {
+            var match = options[i].getAttribute('data-ns') === ns;
+            options[i].hidden = !match;
+            options[i].disabled = !match;
+            if (match && !firstVisible) firstVisible = options[i];
+          }
+          if (firstVisible) siteSelect.value = firstVisible.value;
+        }
+        filterCdnSites();
+      </script>
+      {{ else }}
+      <p style="font-size: 0.85rem; color: var(--text-secondary);">
+        No ingress resources labeled <code>ingress-user={{ .User }}</code> found. CDN update is not available.
+      </p>
+      {{ end }}
+    </div>
+  </div>
+  {{ end }}
+
   <div id="curl-details" class="curl-details-card" style="display: none;">
     <div class="code-header">
       <span class="code-lang">bash</span>
