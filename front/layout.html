@@ -109,7 +109,28 @@
 
       // Hook into HTMX after request to show nice feedback
       document.body.addEventListener('htmx:afterRequest', function(evt) {
-        if (evt.detail.pathInfo.requestPath.includes('/my/update/resource')) {
+        const path = evt.detail.pathInfo.requestPath;
+        if (path.includes('/my/scale')) {
+          const cell = evt.detail.target.closest('.cell-replicas') || evt.detail.elt;
+          const input = cell ? cell.querySelector('.replicas-input') : null;
+          if (evt.detail.successful) {
+            if (input) {
+              input.dataset.current = input.value;
+              input.classList.add('flash-success');
+              setTimeout(() => input.classList.remove('flash-success'), 1500);
+            }
+            showToast('Replicas updated successfully!', 'success');
+          } else {
+            if (input) {
+              input.value = input.dataset.current;
+              input.classList.add('flash-error');
+              setTimeout(() => input.classList.remove('flash-error'), 1500);
+            }
+            showToast('Failed to update replicas: ' + (evt.detail.xhr.responseText || 'Server error'), 'error');
+          }
+          return;
+        }
+        if (path.includes('/my/update/resource')) {
           if (evt.detail.target.tagName === 'TD') {
             if (evt.detail.successful) {
               showToast('Image updated successfully!', 'success');

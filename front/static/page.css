@@ -698,13 +698,22 @@ body {
   color: white;
 }
 
-.replicas-count {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-dim);
-  padding: 0.2rem 0.5rem;
+.cell-replicas {
+  width: 96px;
+}
+
+.replicas-input {
+  width: 84px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.3rem;
+  background-color: rgba(255, 255, 255, 0.05);
   border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: bold;
+}
+
+.replicas-input:focus {
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
 .cell-age {

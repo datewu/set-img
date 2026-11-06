@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/datewu/gtea"
@@ -206,6 +207,37 @@ func (m *myHandler) updateCDN(w http.ResponseWriter, r *http.Request) {
 	site := subdomain + ".deoops.com"
 	go set_cdn(site)
 	handler.OKText(w, fmt.Sprintf("CDN update triggered for %s", site))
+}
+
+func (m *myHandler) scaleResource(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		handler.BadRequestErr(w, err)
+		return
+	}
+	replicas, err := strconv.ParseInt(strings.TrimSpace(r.FormValue("replicas")), 10, 32)
+	if err != nil || replicas < 0 {
+		handler.BadRequestMsg(w, "replicas must be a non-negative integer")
+		return
+	}
+	ns := strings.TrimSpace(r.FormValue("ns"))
+	kind := strings.TrimSpace(r.FormValue("kind"))
+	name := strings.TrimSpace(r.FormValue("name"))
+	if ns == "" || name == "" || (kind != "deploy" && kind != "sts") {
+		handler.BadRequestMsg(w, "invalid scale resource")
+		return
+	}
+	s := k8s.ScalePath{
+		Ns:       ns,
+		Kind:     kind,
+		Name:     name,
+		Replicas: int32(replicas),
+	}
+	if err := s.Scale(fmt.Sprintf("image-user=%s", m.user)); err != nil {
+		handler.ServerErr(w, err)
+		return
+	}
+	handler.OKText(w, "ok")
 }
 
 func (m *myHandler) updateResouce(w http.ResponseWriter, r *http.Request) {

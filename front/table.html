@@ -72,8 +72,14 @@
           <!-- Main row (for the first container) -->
           <tr id="{{ $resourceId }}" class="resource-row-main">
             <td rowspan="{{ $rowspan }}" class="cell-name">{{ .Name }}</td>
-            <td rowspan="{{ $rowspan }}" class="cell-replicas">
-              <span class="replicas-count">{{ .Replicas }}</span>
+            <td rowspan="{{ $rowspan }}" class="cell-replicas"
+                hx-put="/my/scale" hx-trigger="change" hx-include="this" hx-swap="none">
+              <input type="number" name="replicas" value="{{ .Replicas }}" min="0" step="1"
+                data-current="{{ .Replicas }}" class="form-input replicas-input"
+                title="Change replicas to scale this resource" />
+              <input type="hidden" name="ns" value="{{ $resNs }}" />
+              <input type="hidden" name="kind" value="{{ $kind }}" />
+              <input type="hidden" name="name" value="{{ $name }}" />
             </td>
             <td rowspan="{{ $rowspan }}" class="cell-age">{{ .Age }}</td>
             
@@ -329,7 +335,7 @@
     
     mainRows.forEach(row => {
       const name = row.querySelector(".cell-name")?.innerText.toLowerCase() || "";
-      const replicas = row.querySelector(".cell-replicas")?.innerText.toLowerCase() || "";
+      const replicas = row.querySelector(".cell-replicas .replicas-input")?.value.toLowerCase() || "";
       const age = row.querySelector(".cell-age")?.innerText.toLowerCase() || "";
       
       const resourceId = row.id;

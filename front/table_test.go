@@ -2,6 +2,7 @@ package front
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 )
 
@@ -38,6 +39,18 @@ func TestTableViewRender(t *testing.T) {
 	err := view.Render(&buf)
 	if err != nil {
 		t.Fatalf("Failed to render table content: %v", err)
+	}
+
+	rendered := buf.String()
+	for _, want := range []string{
+		`hx-put="/my/scale"`,
+		`name="replicas" value="3"`,
+		`class="form-input replicas-input"`,
+		`data-current="3"`,
+	} {
+		if !strings.Contains(rendered, want) {
+			t.Errorf("rendered table is missing %q", want)
+		}
 	}
 
 	layout := NewLayout("test-user", "development")
